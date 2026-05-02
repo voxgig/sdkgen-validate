@@ -1,0 +1,311 @@
+#!/usr/bin/env python3
+"""summarize — turn a validate-sdkgen run-dir into REPORT.md + report.json.
+
+Reads <run-dir>/summary.log (the key=value stream emitted by validate-sdkgen)
+and produces a per-spec, per-target scoreboard.
+"""
+import argparse
+import json
+import os
+import re
+import sys
+from pathlib import Path
+
+
+PHASE_KEYS = (
+    "scaffold_rc",
+    "gubu_rc",
+    "build_rc",
+    "generate_rc",
+    "duration_seconds",
+)
+
+# RC -> short label
+RC_TIMEOUT = {124: "TIMEOUT", 137: "KILLED"}
+
+
+def parse_summary(path: Path):
+    """Walk summary.log and return [{name, spec_path, ...phase rcs..., per_target: {...}}, ...]."""
+    runs = []
+    cur = None
+    config = {}
+    started_at = None
+    finished_at = None
+    elapsed = None
+
+    started_re = re.compile(r"=============== STARTED (\S+) ===============")
+    done_re = re.compile(r"^ALL DONE (\S+)\s+elapsed=(\d+)s")
+    head_re = re.compile(r"=== (\S+) :: (\S+) ===")
+    target_rc_re = re.compile(r"^target_(\w+)_rc=(-?\d+)$")
+    output_re = re.compile(r"^output_(\w+)=(\d+)$")
+    deps_rc_re = re.compile(r"^deps_(\w+)_rc=(-?\d+)$")
+    test_rc_re = re.compile(r"^test_(\w+)_rc=(-?\d+)$")
+    config_re = re.compile(r"^config (\w+)=(.*)$")
+    tool_re = re.compile(r"^tool (\w+)=(.*)$")
+
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.rstrip()
+
+        m = started_re.match(line)
+        if m:
+            started_at = m.group(1)
+            continue
+
+        m = done_re.match(line)
+        if m:
+            finished_at = m.group(1)
+            elapsed = int(m.group(2))
+            continue
+
+        m = config_re.match(line)
+        if m:
+            config[m.group(1)] = m.group(2)
+            continue
+
+        m = tool_re.match(line)
+        if m:
+            config.setdefault("tools", {})[m.group(1)] = m.group(2)
+            continue
+
+        m = head_re.match(line)
+        if m:
+            cur = {
+                "name": m.group(1),
+                "spec": m.group(2),
+                "spec_path": None,
+                "result": None,
+                "scaffold_rc": None,
+                "gubu_rc": None,
+                "build_rc": None,
+                "generate_rc": None,
+                "duration_seconds": None,
+                "scaffold_skipped": False,
+                "targets": {},
+                "outputs": {},
+                "deps": {},
+                "tests": {},
+            }
+            runs.append(cur)
+            continue
+
+        if cur is None:
+            continue
+
+        if line.startswith("spec_path="):
+            cur["spec_path"] = line.split("=", 1)[1]
+            continue
+
+        if line.startswith("result="):
+            cur["result"] = line.split("=", 1)[1]
+            continue
+
+        if line == "scaffold_skipped=1":
+            cur["scaffold_skipped"] = True
+            continue
+
+        for k in PHASE_KEYS:
+            if line.startswith(f"{k}="):
+                try:
+                    cur[k] = int(line.split("=", 1)[1])
+                except ValueError:
+                    cur[k] = None
+                break
+
+        m = target_rc_re.match(line)
+        if m:
+            cur["targets"][m.group(1)] = int(m.group(2))
+            continue
+
+        m = output_re.match(line)
+        if m:
+            cur["outputs"][m.group(1)] = bool(int(m.group(2)))
+            continue
+
+        m = deps_rc_re.match(line)
+        if m:
+            cur["deps"][m.group(1)] = int(m.group(2))
+            continue
+
+        m = test_rc_re.match(line)
+        if m:
+            cur["tests"][m.group(1)] = int(m.group(2))
+            continue
+
+    return {
+        "config": config,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "elapsed_seconds": elapsed,
+        "runs": runs,
+    }
+
+
+def cell_rc(rc):
+    if rc is None:
+        return "—"
+    if rc == 0:
+        return "OK"
+    if rc == -1:
+        return "skip-deps"
+    if rc == -2:
+        return "no-output"
+    if rc == -3:
+        return "unknown-tgt"
+    if rc in RC_TIMEOUT:
+        return RC_TIMEOUT[rc]
+    return f"FAIL({rc})"
+
+
+def to_markdown(parsed, targets):
+    lines = []
+    lines.append("# validate-sdkgen run report")
+    lines.append("")
+    if parsed["started_at"]:
+        lines.append(f"- Started: `{parsed['started_at']}`")
+    if parsed["finished_at"]:
+        lines.append(
+            f"- Finished: `{parsed['finished_at']}` "
+            f"(elapsed {parsed['elapsed_seconds']}s)"
+        )
+    cfg = parsed["config"]
+    if cfg:
+        lines.append("")
+        lines.append("## Configuration")
+        for k in ("defs", "out", "specs", "targets",
+                  "gen_timeout", "scaffold_timeout",
+                  "target_timeout", "build_timeout", "keep", "only"):
+            if k in cfg:
+                lines.append(f"- `{k}` = `{cfg[k]}`")
+        tools = cfg.get("tools") or {}
+        if tools:
+            lines.append("")
+            lines.append("Tools:")
+            for k, v in tools.items():
+                lines.append(f"- `{k}` = `{v}`")
+
+    runs = parsed["runs"]
+    lines.append("")
+    lines.append("## Scoreboard")
+    lines.append("")
+    header = ["#", "Name", "Spec", "Scaffold", "Build", "Generate", "Targets", "Outputs", "Duration"]
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append("|" + "|".join(["---"] * len(header)) + "|")
+
+    pass_count = 0
+    for i, r in enumerate(runs, 1):
+        scaffold = "skip" if r["scaffold_skipped"] else cell_rc(r["scaffold_rc"])
+        build = cell_rc(r["build_rc"])
+        gen = cell_rc(r["generate_rc"])
+        ok_targets = sum(1 for t in targets if r["targets"].get(t) == 0)
+        ok_outputs = sum(1 for t in targets if r["outputs"].get(t))
+        targets_cell = f"{ok_targets}/{len(targets)}"
+        outputs_cell = f"{ok_outputs}/{len(targets)}"
+        dur = f"{r['duration_seconds']}s" if r["duration_seconds"] is not None else "—"
+        if r["generate_rc"] == 0 and ok_outputs == len(targets):
+            pass_count += 1
+        lines.append("| " + " | ".join([
+            str(i), r["name"], r["spec"], scaffold, build, gen,
+            targets_cell, outputs_cell, dur,
+        ]) + " |")
+
+    lines.append("")
+    lines.append(f"**Totals:** {pass_count}/{len(runs)} specs produced output for every target.")
+
+    # Per-target detail table
+    lines.append("")
+    lines.append("## Per-target target-add results")
+    lines.append("")
+    header = ["Name"] + list(targets)
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append("|" + "|".join(["---"] * len(header)) + "|")
+    for r in runs:
+        row = [r["name"]]
+        for t in targets:
+            row.append(cell_rc(r["targets"].get(t)))
+        lines.append("| " + " | ".join(row) + " |")
+
+    lines.append("")
+    lines.append("## Per-target output presence")
+    lines.append("")
+    lines.append("| " + " | ".join(header) + " |")
+    lines.append("|" + "|".join(["---"] * len(header)) + "|")
+    for r in runs:
+        row = [r["name"]]
+        for t in targets:
+            row.append("✓" if r["outputs"].get(t) else "·")
+        lines.append("| " + " | ".join(row) + " |")
+
+    has_tests = any(r["tests"] or r["deps"] for r in runs)
+    if has_tests:
+        lines.append("")
+        lines.append("## Per-target deps (install) results")
+        lines.append("")
+        lines.append("| " + " | ".join(header) + " |")
+        lines.append("|" + "|".join(["---"] * len(header)) + "|")
+        for r in runs:
+            row = [r["name"]]
+            for t in targets:
+                row.append(cell_rc(r["deps"].get(t)))
+            lines.append("| " + " | ".join(row) + " |")
+
+        lines.append("")
+        lines.append("## Per-target test results")
+        lines.append("")
+        lines.append("| " + " | ".join(header) + " |")
+        lines.append("|" + "|".join(["---"] * len(header)) + "|")
+        for r in runs:
+            row = [r["name"]]
+            for t in targets:
+                row.append(cell_rc(r["tests"].get(t)))
+            lines.append("| " + " | ".join(row) + " |")
+
+        # Test summary count in scoreboard supplement
+        total_test_attempted = 0
+        total_test_passed = 0
+        for r in runs:
+            for t in targets:
+                rc = r["tests"].get(t)
+                if rc is None:
+                    continue
+                if rc == -2:  # no output for that target — not attempted
+                    continue
+                total_test_attempted += 1
+                if rc == 0:
+                    total_test_passed += 1
+        lines.append("")
+        lines.append(
+            f"**Test totals:** {total_test_passed}/{total_test_attempted} target test suites passed."
+        )
+
+    return "\n".join(lines) + "\n"
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Summarize a validate-sdkgen run.")
+    ap.add_argument("--run-dir", required=True, help="Directory containing summary.log")
+    ap.add_argument("--targets", default="ts,js,go,py,php,rb,lua",
+                    help="Comma-separated list of targets to columnize")
+    args = ap.parse_args()
+
+    run_dir = Path(args.run_dir)
+    summary = run_dir / "summary.log"
+    if not summary.exists():
+        print(f"summary.log not found in {run_dir}", file=sys.stderr)
+        return 2
+
+    parsed = parse_summary(summary)
+    targets = [t for t in args.targets.split(",") if t]
+
+    (run_dir / "report.json").write_text(
+        json.dumps(parsed, indent=2) + "\n", encoding="utf-8"
+    )
+    (run_dir / "REPORT.md").write_text(
+        to_markdown(parsed, targets), encoding="utf-8"
+    )
+    print(f"Wrote {run_dir / 'REPORT.md'}")
+    print(f"Wrote {run_dir / 'report.json'}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

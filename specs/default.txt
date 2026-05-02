@@ -1,0 +1,19 @@
+# Default spec list for validate-sdkgen.
+# Format: <name>:<filename-relative-to-defs-dir>
+# Lines starting with '#' and blank lines are ignored.
+# Order matters - smallest specs first so failures don't starve quick wins.
+
+petstore:petstore-1.0.7-swagger-2.0.json
+solar:solar-1.0.0-openapi-3.0.0.yaml
+taxonomy:taxonomy-1.0.0-openapi-3.1.0.yaml
+foo:foo-1.0.0-openapi-3.1.0.yaml
+pokeapi:pokeapi-20220523-openapi-3.0.0.yaml
+dingconnect:dingconnect-v1-swagger-2.0.json
+codatplatform:codatplatform-3.0.0-openapi-3.1.0.yaml
+contentfulcma:contentfulcma-1.0.0-openapi-3.0.0.yaml
+learnworldsnew:learnworlds-2-openapi-3.1.0.yaml
+statuspage:statuspage-1.0.0-openapi-3.0.0.json
+shortcut:shortcut-v3-openapi-3.0.0.json
+cloudsmith:cloudsmith-v1-swagger-2.0.json
+gitlab:gitlab-v4-swagger-2.0.yaml
+github:github-1.1.4-openapi-3.0.3.yaml

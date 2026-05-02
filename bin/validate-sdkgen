@@ -1,0 +1,524 @@
+#!/bin/bash
+# validate-sdkgen — drive @voxgig/sdkgen end-to-end across multiple OpenAPI
+# specs and every supported language target.
+#
+# For each spec in the list:
+#   1. scaffold       npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>
+#   2. install-gubu   workaround for sdkgen 0.39.0 (skipped silently if not needed)
+#   3. target add     npx voxgig-sdkgen target add <lang>      (per target)
+#   4. build          npm run build                            (in <out>/.sdk)
+#   5. generate       npm run generate                         (in <out>/.sdk)
+#
+# With --test, also for each generated target:
+#   6. deps           per-language dep install (npm install / composer install / etc.)
+#   7. test           per-language test runner (npm test / make test)
+#
+# Per-spec phase logs are written under <run-dir>/<name>.<phase>.log.
+# A machine-readable summary is appended to <run-dir>/summary.log; the
+# companion `summarize` script renders it to REPORT.md / report.json.
+
+set -u
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_DIR="$( cd "${SCRIPT_DIR}/.." && pwd )"
+
+# ---- defaults ----
+DEF_DIR_DEFAULT="${HOME}/Projects/voxgig/apidef-validate/def"
+OUT_DIR_DEFAULT="${HOME}/Projects/voxgig-sdk"
+SPECS_DEFAULT="${REPO_DIR}/specs/default.txt"
+TARGETS_DEFAULT="ts,js,go,py,php,rb,lua"
+GEN_TIMEOUT_DEFAULT=600
+SCAFFOLD_TIMEOUT_DEFAULT=600
+TARGET_TIMEOUT_DEFAULT=180
+BUILD_TIMEOUT_DEFAULT=180
+TEST_TIMEOUT_DEFAULT=300
+
+# Toolchain requirements per target language. Used both for --test precheck
+# and as documentation. Entries are space-separated binary names.
+# (case stmt — macOS /bin/bash 3.2 does not support `declare -A`.)
+toolchain_for() {
+  case "$1" in
+    ts)  echo "node npm" ;;
+    js)  echo "node npm" ;;
+    go)  echo "go make" ;;
+    py)  echo "python3 pip make" ;;
+    php) echo "php composer make" ;;
+    rb)  echo "ruby bundle make" ;;
+    lua) echo "lua busted make" ;;
+    *)   echo "" ;;
+  esac
+}
+
+usage() {
+  cat <<EOF
+Usage: validate-sdkgen [options]
+
+Options:
+  --specs <file>          Spec list file (default: ${SPECS_DEFAULT})
+  --defs <dir>            Directory holding API spec files (default: ${DEF_DIR_DEFAULT})
+  --out <dir>             Where SDK projects are created (default: ${OUT_DIR_DEFAULT})
+  --targets <a,b,...>     Comma-separated target list (default: ${TARGETS_DEFAULT})
+  --run-dir <dir>         Where to write logs (default: <out>/_runs/<UTC-timestamp>)
+  --gen-timeout <s>       Generate-phase timeout in seconds (default: ${GEN_TIMEOUT_DEFAULT})
+  --scaffold-timeout <s>  Scaffold-phase timeout (default: ${SCAFFOLD_TIMEOUT_DEFAULT})
+  --target-timeout <s>    Per-target-add timeout (default: ${TARGET_TIMEOUT_DEFAULT})
+  --build-timeout <s>     Build-phase timeout (default: ${BUILD_TIMEOUT_DEFAULT})
+  --test                  Also run each generated SDK's test suite (deps + test phase)
+  --test-timeout <s>      Per-language test phase timeout (default: ${TEST_TIMEOUT_DEFAULT})
+  --sdkgen-path <dir>     After scaffold, override @voxgig/sdkgen in <out>/.sdk/
+                          with the local copy at <dir>. Use to validate fixes
+                          before publishing. Path must contain package.json.
+  --apidef-path <dir>     After scaffold, override @voxgig/apidef in <out>/.sdk/
+                          with the local copy at <dir>. Same semantics as
+                          --sdkgen-path but for the apidef peer dependency.
+  --create-sdkgen-path <dir>
+                          After scaffold, overlay the per-spec scaffold-owned
+                          source files (currently src/BuildSDK.ts) from
+                          <dir>/project/standard/.sdk/src/. Use to test
+                          changes to scaffold-owned files without re-publishing
+                          @voxgig/create-sdkgen.
+  --keep                  Reuse existing <out>/<name>-sdk if present (skip clean+scaffold)
+  --no-summary            Skip running summarize at the end
+  --only <name[,name]>    Run only the listed spec entries (matched by name)
+  -h | --help             Show this help
+
+Spec list format (one per line, # for comments):
+  <name>:<filename-relative-to-defs-dir>
+
+Required toolchains for --test (every binary must be on PATH):
+  ts/js: node npm        go: go make
+  py:    python3 pip make
+  php:   php composer make
+  rb:    ruby bundle make
+  lua:   lua busted make
+
+Examples:
+  validate-sdkgen --specs specs/smoke.txt
+  validate-sdkgen --only petstore,solar
+  validate-sdkgen --targets ts,go --gen-timeout 900
+  validate-sdkgen --specs specs/smoke.txt --test
+EOF
+}
+
+DEF_DIR="${DEF_DIR_DEFAULT}"
+OUT_DIR="${OUT_DIR_DEFAULT}"
+SPECS_FILE="${SPECS_DEFAULT}"
+TARGETS_CSV="${TARGETS_DEFAULT}"
+GEN_TIMEOUT="${GEN_TIMEOUT_DEFAULT}"
+SCAFFOLD_TIMEOUT="${SCAFFOLD_TIMEOUT_DEFAULT}"
+TARGET_TIMEOUT="${TARGET_TIMEOUT_DEFAULT}"
+BUILD_TIMEOUT="${BUILD_TIMEOUT_DEFAULT}"
+TEST_TIMEOUT="${TEST_TIMEOUT_DEFAULT}"
+RUN_DIR=""
+KEEP=0
+NO_SUMMARY=0
+ONLY=""
+RUN_TESTS=0
+SDKGEN_PATH=""
+APIDEF_PATH=""
+CREATE_SDKGEN_PATH=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --specs)            SPECS_FILE="$2"; shift 2;;
+    --defs)             DEF_DIR="$2"; shift 2;;
+    --out)              OUT_DIR="$2"; shift 2;;
+    --targets)          TARGETS_CSV="$2"; shift 2;;
+    --run-dir)          RUN_DIR="$2"; shift 2;;
+    --gen-timeout)      GEN_TIMEOUT="$2"; shift 2;;
+    --scaffold-timeout) SCAFFOLD_TIMEOUT="$2"; shift 2;;
+    --target-timeout)   TARGET_TIMEOUT="$2"; shift 2;;
+    --build-timeout)    BUILD_TIMEOUT="$2"; shift 2;;
+    --test)             RUN_TESTS=1; shift;;
+    --test-timeout)     TEST_TIMEOUT="$2"; shift 2;;
+    --sdkgen-path)      SDKGEN_PATH="$2"; shift 2;;
+    --apidef-path)      APIDEF_PATH="$2"; shift 2;;
+    --create-sdkgen-path) CREATE_SDKGEN_PATH="$2"; shift 2;;
+    --keep)             KEEP=1; shift;;
+    --no-summary)       NO_SUMMARY=1; shift;;
+    --only)             ONLY="$2"; shift 2;;
+    -h|--help)          usage; exit 0;;
+    *) echo "Unknown arg: $1" >&2; usage; exit 2;;
+  esac
+done
+
+if [ ! -f "${SPECS_FILE}" ]; then
+  echo "ERROR: spec list not found: ${SPECS_FILE}" >&2
+  exit 2
+fi
+
+if [ ! -d "${DEF_DIR}" ]; then
+  echo "ERROR: defs dir not found: ${DEF_DIR}" >&2
+  exit 2
+fi
+
+if [ -n "${SDKGEN_PATH}" ]; then
+  if [ ! -f "${SDKGEN_PATH}/package.json" ]; then
+    echo "ERROR: --sdkgen-path: no package.json at ${SDKGEN_PATH}" >&2
+    exit 2
+  fi
+  SDKGEN_PATH="$( cd "${SDKGEN_PATH}" && pwd )"
+  pkg_name="$(node -p "require('${SDKGEN_PATH}/package.json').name" 2>/dev/null || true)"
+  if [ "${pkg_name}" != "@voxgig/sdkgen" ]; then
+    echo "ERROR: --sdkgen-path: expected package name @voxgig/sdkgen, got '${pkg_name}'" >&2
+    exit 2
+  fi
+fi
+
+if [ -n "${APIDEF_PATH}" ]; then
+  if [ ! -f "${APIDEF_PATH}/package.json" ]; then
+    echo "ERROR: --apidef-path: no package.json at ${APIDEF_PATH}" >&2
+    exit 2
+  fi
+  APIDEF_PATH="$( cd "${APIDEF_PATH}" && pwd )"
+  pkg_name="$(node -p "require('${APIDEF_PATH}/package.json').name" 2>/dev/null || true)"
+  if [ "${pkg_name}" != "@voxgig/apidef" ]; then
+    echo "ERROR: --apidef-path: expected package name @voxgig/apidef, got '${pkg_name}'" >&2
+    exit 2
+  fi
+fi
+
+if [ -n "${CREATE_SDKGEN_PATH}" ]; then
+  if [ ! -f "${CREATE_SDKGEN_PATH}/package.json" ]; then
+    echo "ERROR: --create-sdkgen-path: no package.json at ${CREATE_SDKGEN_PATH}" >&2
+    exit 2
+  fi
+  CREATE_SDKGEN_PATH="$( cd "${CREATE_SDKGEN_PATH}" && pwd )"
+  pkg_name="$(node -p "require('${CREATE_SDKGEN_PATH}/package.json').name" 2>/dev/null || true)"
+  if [ "${pkg_name}" != "@voxgig/create-sdkgen" ]; then
+    echo "ERROR: --create-sdkgen-path: expected package name @voxgig/create-sdkgen, got '${pkg_name}'" >&2
+    exit 2
+  fi
+  if [ ! -f "${CREATE_SDKGEN_PATH}/project/standard/.sdk/src/BuildSDK.ts" ]; then
+    echo "ERROR: --create-sdkgen-path: missing project/standard/.sdk/src/BuildSDK.ts at ${CREATE_SDKGEN_PATH}" >&2
+    exit 2
+  fi
+fi
+
+mkdir -p "${OUT_DIR}"
+
+if [ -z "${RUN_DIR}" ]; then
+  TS="$(date -u +%Y%m%dT%H%M%SZ)"
+  RUN_DIR="${OUT_DIR}/_runs/${TS}"
+fi
+mkdir -p "${RUN_DIR}"
+
+IFS=',' read -ra TARGETS <<< "${TARGETS_CSV}"
+
+# `--only` filter held as a space-padded CSV: " name1 name2 " makes
+# `case " ${ONLY_SPACED} " in *" $name "*` a clean check (bash 3.2 friendly).
+ONLY_SPACED=""
+if [ -n "${ONLY}" ]; then
+  ONLY_SPACED=" $(echo "${ONLY}" | tr ',' ' ') "
+fi
+
+is_only_match() {
+  local name="$1"
+  if [ -z "${ONLY_SPACED}" ]; then
+    return 0
+  fi
+  case "${ONLY_SPACED}" in
+    *" ${name} "*) return 0 ;;
+    *)             return 1 ;;
+  esac
+}
+
+# Toolchain precheck for --test. User has explicitly opted in to running
+# language-native test suites, so missing tools are an error, not a skip.
+if [ "${RUN_TESTS}" -eq 1 ]; then
+  missing=""
+  for t in "${TARGETS[@]}"; do
+    bins="$(toolchain_for "${t}")"
+    if [ -z "${bins}" ]; then
+      echo "ERROR: --test: no toolchain definition for target '${t}'" >&2
+      exit 2
+    fi
+    for b in ${bins}; do
+      if ! command -v "${b}" >/dev/null 2>&1; then
+        missing="${missing}\n  - ${b} (required by ${t})"
+      fi
+    done
+  done
+  if [ -n "${missing}" ]; then
+    echo "ERROR: --test: missing required tool(s) on PATH:" >&2
+    printf "${missing}\n" >&2
+    exit 2
+  fi
+fi
+
+SUMMARY="${RUN_DIR}/summary.log"
+TO_WRAPPER="${SCRIPT_DIR}/run-to.py"
+
+if [ ! -x "${TO_WRAPPER}" ]; then
+  chmod +x "${TO_WRAPPER}" 2>/dev/null || true
+fi
+
+run_with_timeout() {
+  local secs=$1; shift
+  python3 "${TO_WRAPPER}" "${secs}" "$@"
+}
+
+# Per-target test phase. Two sub-steps logged separately:
+#   <name>.deps.<lang>.log   — language-native dependency install
+#   <name>.test.<lang>.log   — language-native test runner
+# Records deps_<lang>_rc and test_<lang>_rc to summary. The test step is
+# skipped (and recorded as -1) if the deps step fails.
+run_target_tests() {
+  local name="$1" folder="$2" log_base="$3" t="$4"
+  local target_dir="${folder}/${t}"
+  if [ ! -d "${target_dir}" ]; then
+    echo "test_${t}_rc=-2" >> "${SUMMARY}"
+    echo "deps_${t}_rc=-2" >> "${SUMMARY}"
+    return
+  fi
+
+  local deps_cmd="" test_cmd=""
+  case "${t}" in
+    ts)  deps_cmd="npm install && npm run build"; test_cmd="npm test" ;;
+    js)  deps_cmd="npm install";                  test_cmd="npm test" ;;
+    go)  deps_cmd=":";                            test_cmd="make test" ;;
+    py)  deps_cmd="pip install -e . pytest";      test_cmd="make test" ;;
+    php) deps_cmd="composer install";             test_cmd="make test" ;;
+    rb)  deps_cmd="bundle install";               test_cmd="make test" ;;
+    lua) deps_cmd=":";                            test_cmd="make test" ;;
+    *)   echo "test_${t}_rc=-3" >> "${SUMMARY}";  echo "deps_${t}_rc=-3" >> "${SUMMARY}"; return ;;
+  esac
+
+  echo ">> [${name}] deps ${t}" | tee -a "${SUMMARY}"
+  (cd "${target_dir}" && \
+    run_with_timeout ${TEST_TIMEOUT} bash -c "${deps_cmd}") \
+    >"${log_base}.deps.${t}.log" 2>&1
+  local rc_deps=$?
+  echo "deps_${t}_rc=${rc_deps}" >> "${SUMMARY}"
+
+  if [ ${rc_deps} -ne 0 ]; then
+    echo "!! [${name}] deps ${t} FAILED rc=${rc_deps} (skipping test)" | tee -a "${SUMMARY}"
+    echo "test_${t}_rc=-1" >> "${SUMMARY}"
+    return
+  fi
+
+  echo ">> [${name}] test ${t}" | tee -a "${SUMMARY}"
+  (cd "${target_dir}" && \
+    run_with_timeout ${TEST_TIMEOUT} bash -c "${test_cmd}") \
+    >"${log_base}.test.${t}.log" 2>&1
+  local rc_test=$?
+  echo "test_${t}_rc=${rc_test}" >> "${SUMMARY}"
+  if [ ${rc_test} -ne 0 ]; then
+    echo "!! [${name}] test ${t} FAILED rc=${rc_test}" | tee -a "${SUMMARY}"
+  fi
+}
+
+{
+  echo "=============== STARTED $(date -u +%FT%TZ) ==============="
+  echo "config defs=${DEF_DIR}"
+  echo "config out=${OUT_DIR}"
+  echo "config run_dir=${RUN_DIR}"
+  echo "config specs=${SPECS_FILE}"
+  echo "config targets=${TARGETS_CSV}"
+  echo "config gen_timeout=${GEN_TIMEOUT}"
+  echo "config scaffold_timeout=${SCAFFOLD_TIMEOUT}"
+  echo "config target_timeout=${TARGET_TIMEOUT}"
+  echo "config build_timeout=${BUILD_TIMEOUT}"
+  echo "config keep=${KEEP}"
+  echo "config run_tests=${RUN_TESTS}"
+  echo "config test_timeout=${TEST_TIMEOUT}"
+  if [ -n "${SDKGEN_PATH}" ]; then echo "config sdkgen_path=${SDKGEN_PATH}"; fi
+  if [ -n "${APIDEF_PATH}" ]; then echo "config apidef_path=${APIDEF_PATH}"; fi
+  if [ -n "${CREATE_SDKGEN_PATH}" ]; then echo "config create_sdkgen_path=${CREATE_SDKGEN_PATH}"; fi
+  if [ -n "${ONLY}" ]; then echo "config only=${ONLY}"; fi
+  echo "tool node=$(node --version 2>/dev/null || echo missing)"
+  echo "tool npm=$(npm --version 2>/dev/null || echo missing)"
+  echo "tool python3=$(python3 --version 2>/dev/null || echo missing)"
+  if [ "${RUN_TESTS}" -eq 1 ]; then
+    echo "tool go=$(go version 2>/dev/null | awk '{print $3}' || echo missing)"
+    echo "tool pip=$(pip --version 2>/dev/null | awk '{print $2}' || echo missing)"
+    echo "tool php=$(php --version 2>/dev/null | head -1 | awk '{print $2}' || echo missing)"
+    echo "tool composer=$(composer --version 2>/dev/null | awk '{print $3}' || echo missing)"
+    echo "tool ruby=$(ruby --version 2>/dev/null | awk '{print $2}' || echo missing)"
+    echo "tool bundle=$(bundle --version 2>/dev/null | awk '{print $3}' || echo missing)"
+    echo "tool lua=$(lua -v 2>&1 | head -1 | awk '{print $2}' || echo missing)"
+    echo "tool busted=$(busted --version 2>/dev/null || echo missing)"
+    echo "tool make=$(make --version 2>/dev/null | head -1 | awk '{print $3}' || echo missing)"
+  fi
+} >> "${SUMMARY}"
+
+OVERALL_START=$(date +%s)
+
+while IFS= read -r line; do
+  # Strip comments + whitespace
+  line="${line%%#*}"
+  line="${line## }"; line="${line%% }"
+  [ -z "${line}" ] && continue
+
+  name="${line%%:*}"
+  spec="${line#*:}"
+  spec="${spec## }"; spec="${spec%% }"
+
+  if ! is_only_match "${name}"; then
+    continue
+  fi
+
+  spec_path="${DEF_DIR}/${spec}"
+  folder="${OUT_DIR}/${name}-sdk"
+  log_base="${RUN_DIR}/${name}"
+
+  echo "=== ${name} :: ${spec} ===" | tee -a "${SUMMARY}"
+  echo "spec_path=${spec_path}" >> "${SUMMARY}"
+  ts_start=$(date +%s)
+
+  if [ ! -f "${spec_path}" ]; then
+    echo "!! [${name}] spec not found at ${spec_path}, skipping" | tee -a "${SUMMARY}"
+    echo "result=spec_missing" >> "${SUMMARY}"
+    continue
+  fi
+
+  # Phase 1: scaffold
+  if [ "${KEEP}" -eq 1 ] && [ -d "${folder}/.sdk" ]; then
+    echo ">> [${name}] scaffold (skipped, --keep)" | tee -a "${SUMMARY}"
+    echo "scaffold_rc=0" >> "${SUMMARY}"
+    echo "scaffold_skipped=1" >> "${SUMMARY}"
+  else
+    if [ -d "${folder}" ]; then
+      rm -rf "${folder}"
+    fi
+    echo ">> [${name}] scaffold" | tee -a "${SUMMARY}"
+    (cd "${OUT_DIR}" && \
+      run_with_timeout ${SCAFFOLD_TIMEOUT} \
+        bash -c "npm create @voxgig/sdkgen@latest ${name} -- --def '${spec_path}' --folder '${folder}'") \
+        >"${log_base}.scaffold.log" 2>&1
+    rc_scaffold=$?
+    echo "scaffold_rc=${rc_scaffold}" >> "${SUMMARY}"
+    if [ ${rc_scaffold} -ne 0 ] || [ ! -d "${folder}/.sdk" ]; then
+      echo "!! [${name}] scaffold FAILED rc=${rc_scaffold}" | tee -a "${SUMMARY}"
+      echo "result=scaffold_failed" >> "${SUMMARY}"
+      ts_end=$(date +%s)
+      echo "duration_seconds=$((ts_end - ts_start))" >> "${SUMMARY}"
+      continue
+    fi
+  fi
+
+  # Phase 1b: gubu workaround for @voxgig/sdkgen 0.39.0.
+  # The sdkgen bin requires `gubu` at runtime but doesn't declare it as a dep.
+  # Installing it is a no-op if a newer release fixes the missing dep.
+  echo ">> [${name}] install-gubu" | tee -a "${SUMMARY}"
+  (cd "${folder}/.sdk" && \
+    run_with_timeout ${SCAFFOLD_TIMEOUT} npm install --no-save gubu) \
+    >"${log_base}.gubu.log" 2>&1
+  echo "gubu_rc=$?" >> "${SUMMARY}"
+
+  # Phase 1c: optional --sdkgen-path / --apidef-path overrides. Both are
+  # installed in a single `npm install --no-save` so npm doesn't re-dedupe
+  # between the two and break the first symlink. Replaces the npm-installed
+  # copies with the developer's working tree so subsequent target-add /
+  # build / generate phases use the local source.
+  override_paths=""
+  override_label=""
+  if [ -n "${SDKGEN_PATH}" ]; then
+    override_paths="${override_paths} ${SDKGEN_PATH}"
+    override_label="${override_label} sdkgen=${SDKGEN_PATH}"
+  fi
+  if [ -n "${APIDEF_PATH}" ]; then
+    override_paths="${override_paths} ${APIDEF_PATH}"
+    override_label="${override_label} apidef=${APIDEF_PATH}"
+  fi
+  if [ -n "${override_paths}" ]; then
+    echo ">> [${name}] override${override_label}" | tee -a "${SUMMARY}"
+    (cd "${folder}/.sdk" && \
+      run_with_timeout ${SCAFFOLD_TIMEOUT} \
+        bash -c "npm install --no-save${override_paths}") \
+      >"${log_base}.sdkgen-override.log" 2>&1
+    rc_override=$?
+    echo "sdkgen_override_rc=${rc_override}" >> "${SUMMARY}"
+    if [ ${rc_override} -ne 0 ]; then
+      echo "!! [${name}] override FAILED rc=${rc_override}" | tee -a "${SUMMARY}"
+    fi
+  fi
+
+  # Phase 1d: optional --create-sdkgen-path overlay. Replaces scaffold-owned
+  # source files (currently src/BuildSDK.ts) with the developer's working
+  # copy. Necessary for changes to BuildSDK that need to take effect without
+  # republishing @voxgig/create-sdkgen.
+  if [ -n "${CREATE_SDKGEN_PATH}" ]; then
+    echo ">> [${name}] overlay-create-sdkgen ${CREATE_SDKGEN_PATH}" | tee -a "${SUMMARY}"
+    cp "${CREATE_SDKGEN_PATH}/project/standard/.sdk/src/BuildSDK.ts" \
+       "${folder}/.sdk/src/BuildSDK.ts"
+    echo "create_sdkgen_overlay_rc=$?" >> "${SUMMARY}"
+  fi
+
+  # Phase 2: add each target
+  for t in "${TARGETS[@]}"; do
+    echo ">> [${name}] target add ${t}" | tee -a "${SUMMARY}"
+    (cd "${folder}/.sdk" && \
+      run_with_timeout ${TARGET_TIMEOUT} npx voxgig-sdkgen target add "${t}") \
+      >"${log_base}.target.${t}.log" 2>&1
+    rc=$?
+    echo "target_${t}_rc=${rc}" >> "${SUMMARY}"
+  done
+
+  # Phase 3: build
+  echo ">> [${name}] build" | tee -a "${SUMMARY}"
+  (cd "${folder}/.sdk" && \
+    run_with_timeout ${BUILD_TIMEOUT} npm run build) \
+    >"${log_base}.build.log" 2>&1
+  rc_build=$?
+  echo "build_rc=${rc_build}" >> "${SUMMARY}"
+
+  # Phase 4: generate.
+  # First-generate-after-target-add bug in @voxgig/sdkgen >=0.40.1: the first
+  # `npm run generate` skips the Entity component for every target (no
+  # generate-entity log lines, no <lang>/entity/ output). A second invocation
+  # produces full entity output. Until the upstream bug is fixed we always
+  # run generate twice and report only the second's exit code; the first is
+  # captured under generate.0.log for diagnostics.
+  echo ">> [${name}] generate.0 (warmup, timeout ${GEN_TIMEOUT}s)" | tee -a "${SUMMARY}"
+  (cd "${folder}/.sdk" && \
+    run_with_timeout ${GEN_TIMEOUT} npm run generate) \
+    >"${log_base}.generate.0.log" 2>&1
+  echo "generate_warmup_rc=$?" >> "${SUMMARY}"
+
+  echo ">> [${name}] generate (timeout ${GEN_TIMEOUT}s)" | tee -a "${SUMMARY}"
+  (cd "${folder}/.sdk" && \
+    run_with_timeout ${GEN_TIMEOUT} npm run generate) \
+    >"${log_base}.generate.log" 2>&1
+  rc_gen=$?
+  echo "generate_rc=${rc_gen}" >> "${SUMMARY}"
+  if [ ${rc_gen} -eq 124 ] || [ ${rc_gen} -eq 137 ]; then
+    echo "!! [${name}] generate TIMED OUT after ${GEN_TIMEOUT}s" | tee -a "${SUMMARY}"
+  fi
+
+  # Record per-target output presence (each successful target leaves a top-level
+  # <name>-sdk/<lang>/ folder with src/ inside it).
+  for t in "${TARGETS[@]}"; do
+    if [ -d "${folder}/${t}" ]; then
+      echo "output_${t}=1" >> "${SUMMARY}"
+    else
+      echo "output_${t}=0" >> "${SUMMARY}"
+    fi
+  done
+
+  # Phase 5: per-language tests. Only attempted when --test was passed and
+  # the per-target output folder exists (i.e. that language successfully
+  # generated). Toolchain availability was prechecked above.
+  if [ "${RUN_TESTS}" -eq 1 ]; then
+    for t in "${TARGETS[@]}"; do
+      run_target_tests "${name}" "${folder}" "${log_base}" "${t}"
+    done
+  fi
+
+  ts_end=$(date +%s)
+  echo "duration_seconds=$((ts_end - ts_start))" >> "${SUMMARY}"
+  echo "--- [${name}] done ---" | tee -a "${SUMMARY}"
+done < "${SPECS_FILE}"
+
+OVERALL_END=$(date +%s)
+echo "ALL DONE $(date -u +%FT%TZ) elapsed=$((OVERALL_END - OVERALL_START))s" | tee -a "${SUMMARY}"
+
+if [ "${NO_SUMMARY}" -eq 0 ]; then
+  if [ -x "${SCRIPT_DIR}/summarize" ]; then
+    "${SCRIPT_DIR}/summarize" --run-dir "${RUN_DIR}" --targets "${TARGETS_CSV}"
+  fi
+fi
+
+echo
+echo "Run dir: ${RUN_DIR}"
+echo "Summary: ${SUMMARY}"
