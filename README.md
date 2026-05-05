@@ -3,10 +3,14 @@
 Scripts to validate [`@voxgig/sdkgen`](https://www.npmjs.com/package/@voxgig/sdkgen)
 end-to-end across multiple OpenAPI specs and every supported language target.
 
-**Current baseline: 69/98 test suites pass** across 14 specs × 7 targets — see
-[`baseline/`](baseline/) for the frozen scoreboard ([`BASELINE.md`](baseline/BASELINE.md)),
-the in-tree sdkgen patches it depends on ([`CHANGES.md`](baseline/CHANGES.md)),
-and the path to 98/98 ([`PLAN.md`](baseline/PLAN.md)).
+**Current state: 98/98 test suites pass** across 14 specs × 7 targets against
+the upstream `@voxgig/sdkgen`, `@voxgig/apidef`, and `@voxgig/create-sdkgen`
+HEADs. The latest run lives in [`reports/latest/`](reports/latest/).
+
+[`baseline/`](baseline/) preserves the original 69/98 scoreboard
+([`BASELINE.md`](baseline/BASELINE.md)) for historical reference, the in-tree
+patches it depended on ([`CHANGES.md`](baseline/CHANGES.md)), and the original
+plan to reach 98/98 ([`PLAN.md`](baseline/PLAN.md)).
 
 For each spec the runner executes the canonical bootstrap path:
 
@@ -69,8 +73,8 @@ Quick smoke run (3 small specs, all 7 targets):
 ./bin/validate-sdkgen --specs specs/smoke.txt
 ```
 
-Full canonical run (14 specs, all 7 targets — takes ~60–90 minutes; large
-specs may hit the generate timeout):
+Full canonical run (14 specs, all 7 targets — ~38 minutes wall clock against
+local sdkgen + apidef HEADs; large specs may hit the generate timeout):
 
 ```sh
 ./bin/validate-sdkgen

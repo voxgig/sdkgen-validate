@@ -1,0 +1,710 @@
+{
+  "config": {
+    "defs": "/Users/richard/Projects/voxgig/apidef-validate/def",
+    "out": "/Users/richard/Projects/voxgig-sdk",
+    "run_dir": "/Users/richard/Projects/voxgig-sdk/_runs/20260505T164653Z",
+    "specs": "/Users/richard/Projects/metsitaba/sdk-validate/specs/default.txt",
+    "targets": "ts,js,go,py,php,rb,lua",
+    "gen_timeout": "600",
+    "scaffold_timeout": "600",
+    "target_timeout": "180",
+    "build_timeout": "180",
+    "keep": "0",
+    "run_tests": "1",
+    "test_timeout": "300",
+    "sdkgen_path": "/Users/richard/Projects/voxgig/sdkgen",
+    "apidef_path": "/Users/richard/Projects/voxgig/apidef",
+    "create_sdkgen_path": "/Users/richard/Projects/voxgig/create-sdkgen",
+    "tools": {
+      "node": "v24.11.1",
+      "npm": "11.6.2",
+      "python3": "Python 3.12.4",
+      "go": "go1.26.1",
+      "pip": "24.0",
+      "php": "8.5.5",
+      "composer": "2.9.7",
+      "ruby": "3.2.2",
+      "bundle": "2.4.10",
+      "lua": "5.5.0",
+      "busted": "2.3.0",
+      "make": "3.81"
+    }
+  },
+  "started_at": "2026-05-05T16:46:53Z",
+  "finished_at": "2026-05-05T17:34:33Z",
+  "elapsed_seconds": 2854,
+  "runs": [
+    {
+      "name": "petstore",
+      "spec": "petstore-1.0.7-swagger-2.0.json",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/petstore-1.0.7-swagger-2.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 105,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "solar",
+      "spec": "solar-1.0.0-openapi-3.0.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/solar-1.0.0-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 85,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "taxonomy",
+      "spec": "taxonomy-1.0.0-openapi-3.1.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/taxonomy-1.0.0-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 68,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "foo",
+      "spec": "foo-1.0.0-openapi-3.1.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/foo-1.0.0-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 99,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "pokeapi",
+      "spec": "pokeapi-20220523-openapi-3.0.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/pokeapi-20220523-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 138,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "dingconnect",
+      "spec": "dingconnect-v1-swagger-2.0.json",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/dingconnect-v1-swagger-2.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 115,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "codatplatform",
+      "spec": "codatplatform-3.0.0-openapi-3.1.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/codatplatform-3.0.0-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 118,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "contentfulcma",
+      "spec": "contentfulcma-1.0.0-openapi-3.0.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/contentfulcma-1.0.0-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 132,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "learnworldsnew",
+      "spec": "learnworlds-2-openapi-3.1.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/learnworlds-2-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 68,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "statuspage",
+      "spec": "statuspage-1.0.0-openapi-3.0.0.json",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/statuspage-1.0.0-openapi-3.0.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 76,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "shortcut",
+      "spec": "shortcut-v3-openapi-3.0.0.json",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/shortcut-v3-openapi-3.0.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 92,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "cloudsmith",
+      "spec": "cloudsmith-v1-swagger-2.0.json",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/cloudsmith-v1-swagger-2.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 249,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "gitlab",
+      "spec": "gitlab-v4-swagger-2.0.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/gitlab-v4-swagger-2.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 764,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    },
+    {
+      "name": "github",
+      "spec": "github-1.1.4-openapi-3.0.3.yaml",
+      "spec_path": "/Users/richard/Projects/voxgig/apidef-validate/def/github-1.1.4-openapi-3.0.3.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "gubu_rc": 0,
+      "build_rc": 0,
+      "generate_rc": 0,
+      "duration_seconds": 745,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      }
+    }
+  ]
+}
