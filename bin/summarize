@@ -14,7 +14,6 @@ from pathlib import Path
 
 PHASE_KEYS = (
     "scaffold_rc",
-    "gubu_rc",
     "build_rc",
     "generate_rc",
     "duration_seconds",
@@ -75,7 +74,6 @@ def parse_summary(path: Path):
                 "spec_path": None,
                 "result": None,
                 "scaffold_rc": None,
-                "gubu_rc": None,
                 "build_rc": None,
                 "generate_rc": None,
                 "duration_seconds": None,

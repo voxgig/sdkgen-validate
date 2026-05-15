@@ -4,14 +4,13 @@
 #
 # For each spec in the list:
 #   1. scaffold       npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>
-#   2. install-gubu   workaround for sdkgen 0.39.0 (skipped silently if not needed)
-#   3. target add     npx voxgig-sdkgen target add <lang>      (per target)
-#   4. build          npm run build                            (in <out>/.sdk)
-#   5. generate       npm run generate                         (in <out>/.sdk)
+#   2. target add     npx voxgig-sdkgen target add <lang>      (per target)
+#   3. build          npm run build                            (in <out>/.sdk)
+#   4. generate       npm run generate                         (in <out>/.sdk)
 #
 # With --test, also for each generated target:
-#   6. deps           per-language dep install (npm install / composer install / etc.)
-#   7. test           per-language test runner (npm test / make test)
+#   5. deps           per-language dep install (npm install / composer install / etc.)
+#   6. test           per-language test runner (npm test / make test)
 #
 # Per-spec phase logs are written under <run-dir>/<name>.<phase>.log.
 # A machine-readable summary is appended to <run-dir>/summary.log; the
@@ -397,16 +396,7 @@ while IFS= read -r line; do
     fi
   fi
 
-  # Phase 1b: gubu workaround for @voxgig/sdkgen 0.39.0.
-  # The sdkgen bin requires `gubu` at runtime but doesn't declare it as a dep.
-  # Installing it is a no-op if a newer release fixes the missing dep.
-  echo ">> [${name}] install-gubu" | tee -a "${SUMMARY}"
-  (cd "${folder}/.sdk" && \
-    run_with_timeout ${SCAFFOLD_TIMEOUT} npm install --no-save gubu) \
-    >"${log_base}.gubu.log" 2>&1
-  echo "gubu_rc=$?" >> "${SUMMARY}"
-
-  # Phase 1c: optional --sdkgen-path / --apidef-path overrides. Both are
+  # Phase 1b: optional --sdkgen-path / --apidef-path overrides. Both are
   # installed in a single `npm install --no-save` so npm doesn't re-dedupe
   # between the two and break the first symlink. Replaces the npm-installed
   # copies with the developer's working tree so subsequent target-add /

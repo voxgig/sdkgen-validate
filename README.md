@@ -15,10 +15,9 @@ plan to reach 98/98 ([`PLAN.md`](baseline/PLAN.md)).
 For each spec the runner executes the canonical bootstrap path:
 
 1. **scaffold** — `npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>`
-2. **install-gubu** — workaround for `@voxgig/sdkgen@0.39.0` (missing runtime dep). Harmless on newer releases.
-3. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each of `ts, js, go, py, php, rb, lua` (the seven targets bundled in `@voxgig/sdkgen/project/.sdk/model/target/`).
-4. **build** — `npm run build` inside `<out>/.sdk` (compiles the per-spec generator project).
-5. **generate** — `npm run generate` (runs `voxgig-model model/sdk.jsonic`, which iterates every registered target in a single pass).
+2. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each of `ts, js, go, py, php, rb, lua` (the seven targets bundled in `@voxgig/sdkgen/project/.sdk/model/target/`).
+3. **build** — `npm run build` inside `<out>/.sdk` (compiles the per-spec generator project).
+4. **generate** — `npm run generate` (runs `voxgig-model model/sdk.jsonic`, which iterates every registered target in a single pass).
 
 After every spec it inspects the result folder and records (a) the per-phase
 exit code, (b) the per-target `target add` exit code, and (c) whether the
@@ -129,7 +128,7 @@ solar:solar-1.0.0-openapi-3.0.0.yaml
 Each invocation writes to `<out>/_runs/<UTC-timestamp>/`:
 
 - `summary.log` — line-oriented `key=value` stream consumed by `summarize`
-- `<name>.scaffold.log`, `<name>.gubu.log`, `<name>.target.<lang>.log`,
+- `<name>.scaffold.log`, `<name>.target.<lang>.log`,
   `<name>.build.log`, `<name>.generate.log` — raw stdout+stderr per phase
 - `REPORT.md` — human-readable scoreboard (per-spec, per-target)
 - `report.json` — machine-readable equivalent
