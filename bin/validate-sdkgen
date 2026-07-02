@@ -70,9 +70,16 @@ Options:
   --apidef-path <dir>     After scaffold, override @voxgig/apidef in <out>/.sdk/
                           with the local copy at <dir>. Same semantics as
                           --sdkgen-path but for the apidef peer dependency.
+  --model-path <dir>      After scaffold, override @voxgig/model in <out>/.sdk/
+                          with the local copy at <dir>. Same semantics as
+                          --sdkgen-path. (model drives the generate phase.)
+  --aontu-path <dir>      After scaffold, override aontu in <out>/.sdk/ with the
+                          local copy at <dir>. Same semantics as --sdkgen-path.
+                          (aontu is model's unifier; override to validate unify
+                          fixes before publishing.)
   --create-sdkgen-path <dir>
                           After scaffold, overlay the per-spec scaffold-owned
-                          source files (currently src/BuildSDK.ts) from
+                          source files (src/BuildSDK.ts, src/tsconfig.json) from
                           <dir>/project/standard/.sdk/src/. Use to test
                           changes to scaffold-owned files without re-publishing
                           @voxgig/create-sdkgen.
@@ -115,6 +122,8 @@ ONLY=""
 RUN_TESTS=0
 SDKGEN_PATH=""
 APIDEF_PATH=""
+MODEL_PATH=""
+AONTU_PATH=""
 CREATE_SDKGEN_PATH=""
 
 while [ $# -gt 0 ]; do
@@ -132,6 +141,8 @@ while [ $# -gt 0 ]; do
     --test-timeout)     TEST_TIMEOUT="$2"; shift 2;;
     --sdkgen-path)      SDKGEN_PATH="$2"; shift 2;;
     --apidef-path)      APIDEF_PATH="$2"; shift 2;;
+    --model-path)       MODEL_PATH="$2"; shift 2;;
+    --aontu-path)       AONTU_PATH="$2"; shift 2;;
     --create-sdkgen-path) CREATE_SDKGEN_PATH="$2"; shift 2;;
     --keep)             KEEP=1; shift;;
     --no-summary)       NO_SUMMARY=1; shift;;
@@ -173,6 +184,32 @@ if [ -n "${APIDEF_PATH}" ]; then
   pkg_name="$(node -p "require('${APIDEF_PATH}/package.json').name" 2>/dev/null || true)"
   if [ "${pkg_name}" != "@voxgig/apidef" ]; then
     echo "ERROR: --apidef-path: expected package name @voxgig/apidef, got '${pkg_name}'" >&2
+    exit 2
+  fi
+fi
+
+if [ -n "${MODEL_PATH}" ]; then
+  if [ ! -f "${MODEL_PATH}/package.json" ]; then
+    echo "ERROR: --model-path: no package.json at ${MODEL_PATH}" >&2
+    exit 2
+  fi
+  MODEL_PATH="$( cd "${MODEL_PATH}" && pwd )"
+  pkg_name="$(node -p "require('${MODEL_PATH}/package.json').name" 2>/dev/null || true)"
+  if [ "${pkg_name}" != "@voxgig/model" ]; then
+    echo "ERROR: --model-path: expected package name @voxgig/model, got '${pkg_name}'" >&2
+    exit 2
+  fi
+fi
+
+if [ -n "${AONTU_PATH}" ]; then
+  if [ ! -f "${AONTU_PATH}/package.json" ]; then
+    echo "ERROR: --aontu-path: no package.json at ${AONTU_PATH}" >&2
+    exit 2
+  fi
+  AONTU_PATH="$( cd "${AONTU_PATH}" && pwd )"
+  pkg_name="$(node -p "require('${AONTU_PATH}/package.json').name" 2>/dev/null || true)"
+  if [ "${pkg_name}" != "aontu" ]; then
+    echo "ERROR: --aontu-path: expected package name aontu, got '${pkg_name}'" >&2
     exit 2
   fi
 fi
@@ -323,6 +360,8 @@ run_target_tests() {
   echo "config test_timeout=${TEST_TIMEOUT}"
   if [ -n "${SDKGEN_PATH}" ]; then echo "config sdkgen_path=${SDKGEN_PATH}"; fi
   if [ -n "${APIDEF_PATH}" ]; then echo "config apidef_path=${APIDEF_PATH}"; fi
+  if [ -n "${MODEL_PATH}" ]; then echo "config model_path=${MODEL_PATH}"; fi
+  if [ -n "${AONTU_PATH}" ]; then echo "config aontu_path=${AONTU_PATH}"; fi
   if [ -n "${CREATE_SDKGEN_PATH}" ]; then echo "config create_sdkgen_path=${CREATE_SDKGEN_PATH}"; fi
   if [ -n "${ONLY}" ]; then echo "config only=${ONLY}"; fi
   echo "tool node=$(node --version 2>/dev/null || echo missing)"
@@ -411,6 +450,14 @@ while IFS= read -r line; do
     override_paths="${override_paths} ${APIDEF_PATH}"
     override_label="${override_label} apidef=${APIDEF_PATH}"
   fi
+  if [ -n "${MODEL_PATH}" ]; then
+    override_paths="${override_paths} ${MODEL_PATH}"
+    override_label="${override_label} model=${MODEL_PATH}"
+  fi
+  if [ -n "${AONTU_PATH}" ]; then
+    override_paths="${override_paths} ${AONTU_PATH}"
+    override_label="${override_label} aontu=${AONTU_PATH}"
+  fi
   if [ -n "${override_paths}" ]; then
     echo ">> [${name}] override${override_label}" | tee -a "${SUMMARY}"
     (cd "${folder}/.sdk" && \
@@ -425,14 +472,21 @@ while IFS= read -r line; do
   fi
 
   # Phase 1d: optional --create-sdkgen-path overlay. Replaces scaffold-owned
-  # source files (currently src/BuildSDK.ts) with the developer's working
-  # copy. Necessary for changes to BuildSDK that need to take effect without
-  # republishing @voxgig/create-sdkgen.
+  # source files with the developer's working copy — the scaffold skeleton is
+  # copied from the *published* @voxgig/create-sdkgen, so local changes to
+  # these files only take effect via this overlay (without republishing):
+  #   src/BuildSDK.ts     — generator entry point
+  #   src/tsconfig.json   — generated project's tsc config (e.g. skipLibCheck)
   if [ -n "${CREATE_SDKGEN_PATH}" ]; then
     echo ">> [${name}] overlay-create-sdkgen ${CREATE_SDKGEN_PATH}" | tee -a "${SUMMARY}"
-    cp "${CREATE_SDKGEN_PATH}/project/standard/.sdk/src/BuildSDK.ts" \
-       "${folder}/.sdk/src/BuildSDK.ts"
-    echo "create_sdkgen_overlay_rc=$?" >> "${SUMMARY}"
+    csg_src="${CREATE_SDKGEN_PATH}/project/standard/.sdk/src"
+    cp "${csg_src}/BuildSDK.ts" "${folder}/.sdk/src/BuildSDK.ts"
+    rc_overlay=$?
+    if [ -f "${csg_src}/tsconfig.json" ]; then
+      cp "${csg_src}/tsconfig.json" "${folder}/.sdk/src/tsconfig.json"
+      [ $? -ne 0 ] && rc_overlay=1
+    fi
+    echo "create_sdkgen_overlay_rc=${rc_overlay}" >> "${SUMMARY}"
   fi
 
   # Phase 2: add each target
