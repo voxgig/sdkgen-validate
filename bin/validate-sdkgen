@@ -476,16 +476,20 @@ while IFS= read -r line; do
   # copied from the *published* @voxgig/create-sdkgen, so local changes to
   # these files only take effect via this overlay (without republishing):
   #   src/BuildSDK.ts     — generator entry point
+  #   src/Root.ts         — generation composition root
+  #   src/Top.ts          — root-level output (README, deploy Makefile)
   #   src/tsconfig.json   — generated project's tsc config (e.g. skipLibCheck)
   if [ -n "${CREATE_SDKGEN_PATH}" ]; then
     echo ">> [${name}] overlay-create-sdkgen ${CREATE_SDKGEN_PATH}" | tee -a "${SUMMARY}"
     csg_src="${CREATE_SDKGEN_PATH}/project/standard/.sdk/src"
     cp "${csg_src}/BuildSDK.ts" "${folder}/.sdk/src/BuildSDK.ts"
     rc_overlay=$?
-    if [ -f "${csg_src}/tsconfig.json" ]; then
-      cp "${csg_src}/tsconfig.json" "${folder}/.sdk/src/tsconfig.json"
-      [ $? -ne 0 ] && rc_overlay=1
-    fi
+    for csg_file in Root.ts Top.ts tsconfig.json; do
+      if [ -f "${csg_src}/${csg_file}" ]; then
+        cp "${csg_src}/${csg_file}" "${folder}/.sdk/src/${csg_file}"
+        [ $? -ne 0 ] && rc_overlay=1
+      fi
+    done
     echo "create_sdkgen_overlay_rc=${rc_overlay}" >> "${SUMMARY}"
   fi
 
