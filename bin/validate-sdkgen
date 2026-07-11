@@ -534,6 +534,23 @@ while IFS= read -r line; do
     echo "!! [${name}] generate TIMED OUT after ${GEN_TIMEOUT}s" | tee -a "${SUMMARY}"
   fi
 
+  # Phase 4b: rebuild test fixtures from the .aontu sources.
+  # `npm create` scaffolds a pre-built test/test.json snapshot that matches
+  # the PUBLISHED sdkgen. When validating a different sdkgen (e.g. a local
+  # --sdkgen-path), behaviour changes (auth prefix spacing, header shapes,
+  # ...) leave that snapshot stale, so the generated SDK's own tests assert
+  # against outdated expectations. Rebuilding from the .aontu source (which
+  # tracks the current sdkgen) keeps the fixtures honest. Best-effort: not
+  # every scaffold exposes `test-model`, so a missing script is not fatal.
+  if [ -f "${folder}/.sdk/package.json" ] && \
+     grep -q '"test-model"' "${folder}/.sdk/package.json" 2>/dev/null; then
+    echo ">> [${name}] test-model (rebuild fixtures)" | tee -a "${SUMMARY}"
+    (cd "${folder}/.sdk" && \
+      run_with_timeout ${GEN_TIMEOUT} npm run test-model) \
+      >"${log_base}.test-model.log" 2>&1
+    echo "test_model_rc=$?" >> "${SUMMARY}"
+  fi
+
   # Record per-target output presence (each successful target leaves a top-level
   # <name>-sdk/<lang>/ folder with src/ inside it).
   for t in "${TARGETS[@]}"; do
