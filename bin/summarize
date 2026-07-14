@@ -16,6 +16,7 @@ PHASE_KEYS = (
     "scaffold_rc",
     "build_rc",
     "generate_rc",
+    "test_model_rc",
     "duration_seconds",
 )
 
@@ -76,6 +77,7 @@ def parse_summary(path: Path):
                 "scaffold_rc": None,
                 "build_rc": None,
                 "generate_rc": None,
+                "test_model_rc": None,
                 "duration_seconds": None,
                 "scaffold_skipped": False,
                 "targets": {},
@@ -185,7 +187,7 @@ def to_markdown(parsed, targets):
     lines.append("")
     lines.append("## Scoreboard")
     lines.append("")
-    header = ["#", "Name", "Spec", "Scaffold", "Build", "Generate", "Targets", "Outputs", "Duration"]
+    header = ["#", "Name", "Spec", "Scaffold", "Build", "Generate", "TestModel", "Targets", "Outputs", "Duration"]
     lines.append("| " + " | ".join(header) + " |")
     lines.append("|" + "|".join(["---"] * len(header)) + "|")
 
@@ -194,6 +196,7 @@ def to_markdown(parsed, targets):
         scaffold = "skip" if r["scaffold_skipped"] else cell_rc(r["scaffold_rc"])
         build = cell_rc(r["build_rc"])
         gen = cell_rc(r["generate_rc"])
+        test_model = cell_rc(r["test_model_rc"])
         ok_targets = sum(1 for t in targets if r["targets"].get(t) == 0)
         ok_outputs = sum(1 for t in targets if r["outputs"].get(t))
         targets_cell = f"{ok_targets}/{len(targets)}"
@@ -202,7 +205,7 @@ def to_markdown(parsed, targets):
         if r["generate_rc"] == 0 and ok_outputs == len(targets):
             pass_count += 1
         lines.append("| " + " | ".join([
-            str(i), r["name"], r["spec"], scaffold, build, gen,
+            str(i), r["name"], r["spec"], scaffold, build, gen, test_model,
             targets_cell, outputs_cell, dur,
         ]) + " |")
 

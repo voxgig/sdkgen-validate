@@ -524,6 +524,31 @@ while IFS= read -r line; do
     >"${log_base}.generate.0.log" 2>&1
   echo "generate_warmup_rc=$?" >> "${SUMMARY}"
 
+  # Phase 4b: rebuild test fixtures from the .aontu sources BEFORE the final
+  # generate. `npm create` scaffolds a pre-built test/test.json snapshot that
+  # matches the PUBLISHED sdkgen. When validating a different sdkgen (e.g. a
+  # local --sdkgen-path), behaviour changes (auth prefix spacing, header
+  # shapes, ...) leave that snapshot stale. The per-language test fixtures are
+  # emitted DURING generate, so the rebuild must happen before the final
+  # generate pass for the generated fixtures to be honest. Best-effort: not
+  # every scaffold exposes `test-model`, so a missing script is not fatal, but
+  # a non-zero rc is surfaced (a silent stale-fixture rebuild otherwise hides
+  # real drift behind a green report).
+  if [ -f "${folder}/.sdk/package.json" ] && \
+     grep -q '"test-model"' "${folder}/.sdk/package.json" 2>/dev/null; then
+    echo ">> [${name}] test-model (rebuild fixtures)" | tee -a "${SUMMARY}"
+    (cd "${folder}/.sdk" && \
+      run_with_timeout ${GEN_TIMEOUT} npm run test-model) \
+      >"${log_base}.test-model.log" 2>&1
+    rc_tm=$?
+    echo "test_model_rc=${rc_tm}" >> "${SUMMARY}"
+    if [ ${rc_tm} -eq 124 ] || [ ${rc_tm} -eq 137 ]; then
+      echo "!! [${name}] test-model TIMED OUT after ${GEN_TIMEOUT}s" | tee -a "${SUMMARY}"
+    elif [ ${rc_tm} -ne 0 ]; then
+      echo "!! [${name}] test-model FAILED (rc=${rc_tm}) — fixtures may be stale" | tee -a "${SUMMARY}"
+    fi
+  fi
+
   echo ">> [${name}] generate (timeout ${GEN_TIMEOUT}s)" | tee -a "${SUMMARY}"
   (cd "${folder}/.sdk" && \
     run_with_timeout ${GEN_TIMEOUT} npm run generate) \
