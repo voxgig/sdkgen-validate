@@ -17,7 +17,7 @@ For each spec the runner executes the canonical bootstrap path:
 1. **scaffold** — `npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>`
 2. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each of `ts, js, go, py, php, rb, lua` (the seven targets bundled in `@voxgig/sdkgen/project/.sdk/model/target/`).
 3. **build** — `npm run build` inside `<out>/.sdk` (compiles the per-spec generator project).
-4. **generate** — `npm run generate` (runs `voxgig-model model/sdk.jsonic`, which iterates every registered target in a single pass).
+4. **generate** — `npm run generate` (runs `voxgig-model model/sdk.aontu`, which iterates every registered target in a single pass).
 
 After every spec it inspects the result folder and records (a) the per-phase
 exit code, (b) the per-target `target add` exit code, and (c) whether the
