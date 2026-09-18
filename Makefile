@@ -37,3 +37,13 @@ full-test:
 summarize:
 	@test -n "$(RUN)" || { echo "usage: make summarize RUN=<run-dir>"; exit 2; }
 	$(SUMMARIZE) --run-dir $(RUN)
+
+.PHONY: comments comments-test hooks
+comments:
+	node tools/comment-gate.cjs
+
+comments-test:
+	node --test tools/comment-gate.test.cjs
+
+hooks:
+	git config core.hooksPath .githooks
