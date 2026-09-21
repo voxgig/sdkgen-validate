@@ -111,6 +111,41 @@ All options:
 ./bin/validate-sdkgen --help
 ```
 
+## Local schema migrations
+
+Start with built local checkouts. `--sdkgen-path`, `--apidef-path`,
+`--aontu-path`, `--model-path`, `--docgen-path`, `--langpack-path`, and
+`--infrapack-path`
+create symlinks in the generated project's `node_modules`, including CLI
+links. They leave manifests and lockfiles unchanged. Dependencies of each
+linked checkout must also resolve the intended local versions.
+
+`--create-sdkgen-path` uses the local scaffold CLI and refreshes its build
+components when combined with `--keep`. `--no-docs` disables documentation
+editions so SDK checks can run independently of Docgen. To validate documentation
+as well, omit `--no-docs` and pass `--docgen-path ../docgen/ts`. Use a fresh output
+directory if an earlier run disabled editions in its generated config.
+
+```sh
+./bin/validate-sdkgen --specs specs/smoke.txt --no-docs --test \
+  --sdkgen-path ../sdkgen/ts --apidef-path ../apidef/ts \
+  --aontu-path ../../aontu-lang/aontu/ts \
+  --create-sdkgen-path ../create-sdkgen \
+  --langpack-path ../sdkgen-langpack --infrapack-path ../sdkgen-infrapack \
+  --targets ts,js,go,py,php,rb,lua,dart,haskell,lean,seneca-provider
+```
+
+Dart, Haskell, and Lean run their generated `make build test` targets.
+Seneca provider validation requires the `ts` target; its SDK dependency is
+symlinked to that generated TypeScript package before installing other test
+dependencies. A fresh provider output gets a local Git repository on `main`
+for its maintenance checks; existing Git metadata is preserved. Use a Python
+virtual environment for Python dependency installs.
+
+The command exits unsuccessfully if a requested phase fails or output is
+missing. Reports retain the individual results, including failures on an
+unchanged baseline.
+
 ## Spec list format
 
 `<name>:<filename-relative-to-defs-dir>` per line, `#` for comments. Example:
