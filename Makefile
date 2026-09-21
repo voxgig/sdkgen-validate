@@ -47,3 +47,7 @@ comments-test:
 
 hooks:
 	git config core.hooksPath .githooks
+
+.PHONY: test-local-links
+test-local-links:
+	node --test test-link-local.cjs
