@@ -49,12 +49,17 @@ With `--test`, two additional phases run per generated target language:
 | lua | (none)                         | `make test` (`busted test/`) |
 
 Toolchain availability is **prechecked** at startup when `--test` is set —
-any missing binary is a hard error. Required binaries: `node npm` (ts/js),
-`go make` (go), `python3 make` (py), `php composer make` (php),
-`ruby bundle make` (rb), `lua busted make` (lua). Install `busted` with
-`luarocks install busted`; where LuaRocks installs into a home prefix (a Mac
-with Homebrew Lua puts it in `~/.luarocks/bin`), prepend that to `PATH`
-before invoking the script.
+any missing binary is a hard error. The list below is what a run *requires*,
+not a claim about what any machine has: the precheck resolves each binary on
+the machine in use, which is the only place the answer is knowable. Required
+binaries: `node npm npx python3 git` for every run whatever `--targets` says,
+because scaffolding and building go through npm and python3 runs both the
+per-phase timeout wrapper and the summarizer; then per target, `node npm`
+(ts/js), `go make` (go), `python3 make` (py), `php composer make` (php),
+`ruby bundle make` (rb), `lua busted make` (lua).
+Install `busted` with `luarocks install busted`; where LuaRocks installs into
+a home prefix (a Mac with Homebrew Lua puts it in `~/.luarocks/bin`), prepend
+that to `PATH` before invoking the script.
 
 ## When a published dependency breaks the run
 
@@ -102,9 +107,11 @@ reports/
 
 - Node.js + npm on `$PATH` (the runner uses `npm create` and `npx`)
 - Python 3 (for the timeout wrapper + summariser)
-- A directory of OpenAPI spec files. The default location is
-  `~/Projects/voxgig/apidef-validate/def/` — override with `--defs`.
-  `apidef-validate` owns those files; this repository keeps no copies.
+- A directory of OpenAPI spec files. The built-in default,
+  `~/Projects/voxgig/apidef-validate/def/`, describes one checkout layout
+  rather than a required one — on any other, pass `--defs` (likewise `--out`,
+  whose default is `~/Projects/voxgig-sdk`). `apidef-validate` owns those
+  files; this repository keeps no copies.
 
 ## This repository's own gates
 
@@ -267,7 +274,7 @@ The validate driver invokes `summarize` automatically at the end. Re-run it
 manually any time:
 
 ```sh
-./bin/summarize --run-dir ~/Projects/voxgig-sdk/_runs/<timestamp>
+./bin/summarize --run-dir <out>/_runs/<timestamp>
 ```
 
 ## Timeouts
