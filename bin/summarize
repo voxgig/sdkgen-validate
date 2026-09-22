@@ -39,8 +39,8 @@ PATH_KEYS = (
 
 CONFIG_KEYS = (
     "defs", "out", "specs", "targets", "gen_timeout", "scaffold_timeout",
-    "target_timeout", "build_timeout", "test_timeout", "keep", "run_tests",
-    "no_docs", "scaffold_install", "only", "sdkgen_path", "apidef_path",
+    "target_timeout", "build_timeout", "test_timeout", "keep", "clean_after",
+    "run_tests", "no_docs", "scaffold_install", "only", "sdkgen_path", "apidef_path",
     "model_path", "aontu_path", "docgen_path", "create_sdkgen_path",
     "langpack_path", "infrapack_path",
 )

@@ -32,6 +32,7 @@ function fixture(extra = '') {
     `config specs=${OUT}/sdkgen-validate/specs/default.txt`,
     'config targets=ts,go',
     'config run_tests=1',
+    'config clean_after=1',
     'config scaffold_install=@tabnas/parser@0.10.0',
     'version @voxgig/sdkgen=4.23.0',
     '=== petstore :: petstore.json ===',
@@ -97,6 +98,16 @@ test('an ephemeral dependency override is reported, not hidden', () => {
   const run = summarize(fixture())
   try {
     assert.match(run.markdown, /`scaffold_install` = `@tabnas\/parser@0\.10\.0`/)
+  } finally { run.cleanup() }
+})
+
+// A run that deleted its generated trees must say so: the report is the only
+// record left of what could still be inspected.
+test('a run that cleaned up after itself says so', () => {
+  const run = summarize(fixture())
+  try {
+    assert.match(run.markdown, /`clean_after` = `1`/)
+    assert.equal(run.report.config.clean_after, '1')
   } finally { run.cleanup() }
 })
 
