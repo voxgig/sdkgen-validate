@@ -100,6 +100,11 @@ Options:
                           cannot halt a run before sdkgen and apidef are
                           exercised. Ephemeral: nothing in this repository, and
                           no manifest or lockfile, is pinned.
+  --clean-after           Delete <out>/<name>-sdk once its phases are done, so
+                          the full spec list runs on a machine that cannot hold
+                          every generated tree at once. Phase logs are kept in
+                          the run dir; re-run one spec with --only to inspect a
+                          tree. Ignored with --keep.
   --keep                  Reuse existing <out>/<name>-sdk if present (skip clean+scaffold)
   --no-summary            Skip running summarize at the end
   --only <name[,name]>    Run only the listed spec entries (matched by name)
@@ -136,6 +141,7 @@ BUILD_TIMEOUT="${BUILD_TIMEOUT_DEFAULT}"
 TEST_TIMEOUT="${TEST_TIMEOUT_DEFAULT}"
 RUN_DIR=""
 KEEP=0
+CLEAN_AFTER=0
 NO_SUMMARY=0
 NO_DOCS=0
 ONLY=""
@@ -173,6 +179,7 @@ while [ $# -gt 0 ]; do
     --infrapack-path)   INFRAPACK_PATH="$2"; shift 2;;
     --no-docs)          NO_DOCS=1; shift;;
     --scaffold-install) SCAFFOLD_INSTALL+=("$2"); shift 2;;
+    --clean-after)      CLEAN_AFTER=1; shift;;
     --keep)             KEEP=1; shift;;
     --no-summary)       NO_SUMMARY=1; shift;;
     --only)             ONLY="$2"; shift 2;;
@@ -422,6 +429,7 @@ run_target_tests() {
   echo "config target_timeout=${TARGET_TIMEOUT}"
   echo "config build_timeout=${BUILD_TIMEOUT}"
   echo "config keep=${KEEP}"
+  echo "config clean_after=${CLEAN_AFTER}"
   echo "config run_tests=${RUN_TESTS}"
   echo "config test_timeout=${TEST_TIMEOUT}"
   if [ -n "${SDKGEN_PATH}" ]; then echo "config sdkgen_path=${SDKGEN_PATH}"; fi
@@ -697,6 +705,11 @@ JS
     for t in "${TARGETS[@]}"; do
       run_target_tests "${name}" "${folder}" "${log_base}" "${t}"
     done
+  fi
+
+  if [ "${CLEAN_AFTER}" -eq 1 ] && [ "${KEEP}" -eq 0 ]; then
+    rm -rf "${folder}"
+    echo "cleaned=1" >> "${SUMMARY}"
   fi
 
   ts_end=$(date +%s)

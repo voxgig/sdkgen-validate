@@ -41,7 +41,7 @@ summarize:
 
 # The repository's own gates. These check the harness, not @voxgig/sdkgen:
 # a validation run is `make smoke` / `make full`.
-test: comments comments-test test-local-links test-summarize
+test: comments comments-test test-local-links test-summarize test-driver
 
 .PHONY: comments comments-test hooks
 comments:
@@ -53,10 +53,12 @@ comments-test:
 hooks:
 	git config core.hooksPath .githooks
 
-.PHONY: test-local-links test-summarize
+.PHONY: test-local-links test-summarize test-driver
 test-local-links:
 	node --test test-link-local.cjs
 
 test-summarize:
 	node --test tools/summarize.test.cjs
 
+test-driver:
+	node --test tools/driver.test.cjs

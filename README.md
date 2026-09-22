@@ -93,6 +93,7 @@ specs/
 tools/
   comment-gate.cjs  # source comment policy, with its tests
   summarize.test.cjs # the summarizer's tests
+  driver.test.cjs   # the driver's usage/argument tests
 reports/
   latest/           # the last run's REPORT.md + report.json, committed
 ```
@@ -112,8 +113,8 @@ make test
 ```
 
 runs the comment-policy gate and its tests, the local-link test, and the
-summarizer tests. It generates nothing — a validation run is `make smoke` or
-`make full`. CI runs the comment gate on every push.
+summarizer and driver tests. It generates nothing — a validation run is
+`make smoke` or `make full`. CI runs the comment gate on every push.
 
 ## Usage
 
@@ -128,6 +129,17 @@ wall clock and can exceed the default generate budget, so raise it:
 
 ```sh
 ./bin/validate-sdkgen --gen-timeout 1800
+```
+
+Every generated tree is kept, which the full list cannot always afford: one
+spec's tree runs to a few GB once each language has installed its own
+dependencies. `--clean-after` deletes each `<out>/<name>-sdk` as soon as its
+phases are done, so the peak is one spec rather than all fourteen. The phase
+logs are unaffected — they live in the run dir — and a single spec can be
+re-run without the flag to inspect a tree:
+
+```sh
+./bin/validate-sdkgen --gen-timeout 1800 --clean-after
 ```
 
 Run only specific specs from the list:
