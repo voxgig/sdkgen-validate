@@ -4,6 +4,7 @@
 #
 # For each spec in the list:
 #   1. scaffold       npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>
+#   1b. scaffold-install  npm install --no-save <pkg@ver>      (only with --scaffold-install)
 #   2. target add     npx voxgig-sdkgen target add <lang>      (per target)
 #   3. build          npm run build                            (in <out>/.sdk)
 #   4. generate       npm run generate                         (in <out>/.sdk)
@@ -91,6 +92,19 @@ Options:
   --langpack-path <dir>   Symlink a local @voxgig/sdkgen-langpack package.
   --infrapack-path <dir>  Symlink a local @voxgig/sdkgen-infrapack package.
   --no-docs               Disable documentation editions for SDK-only validation.
+  --scaffold-install <pkg@ver>
+                          Repeatable. Scaffolds with --no-install, then installs
+                          the throwaway <out>/<name>-sdk/.sdk with
+                          'npm install --no-save <pkg@ver>', so a published
+                          transitive dependency that fails at require time
+                          cannot halt a run before sdkgen and apidef are
+                          exercised. Ephemeral: nothing in this repository, and
+                          no manifest or lockfile, is pinned.
+  --clean-after           Delete <out>/<name>-sdk once its phases are done, so
+                          the full spec list runs on a machine that cannot hold
+                          every generated tree at once. Phase logs are kept in
+                          the run dir; re-run one spec with --only to inspect a
+                          tree. Ignored with --keep.
   --keep                  Reuse existing <out>/<name>-sdk if present (skip clean+scaffold)
   --no-summary            Skip running summarize at the end
   --only <name[,name]>    Run only the listed spec entries (matched by name)
@@ -127,9 +141,11 @@ BUILD_TIMEOUT="${BUILD_TIMEOUT_DEFAULT}"
 TEST_TIMEOUT="${TEST_TIMEOUT_DEFAULT}"
 RUN_DIR=""
 KEEP=0
+CLEAN_AFTER=0
 NO_SUMMARY=0
 NO_DOCS=0
 ONLY=""
+SCAFFOLD_INSTALL=()
 RUN_TESTS=0
 SDKGEN_PATH=""
 APIDEF_PATH=""
@@ -162,6 +178,8 @@ while [ $# -gt 0 ]; do
     --langpack-path)    LANGPACK_PATH="$2"; shift 2;;
     --infrapack-path)   INFRAPACK_PATH="$2"; shift 2;;
     --no-docs)          NO_DOCS=1; shift;;
+    --scaffold-install) SCAFFOLD_INSTALL+=("$2"); shift 2;;
+    --clean-after)      CLEAN_AFTER=1; shift;;
     --keep)             KEEP=1; shift;;
     --no-summary)       NO_SUMMARY=1; shift;;
     --only)             ONLY="$2"; shift 2;;
@@ -328,6 +346,21 @@ run_with_timeout() {
   python3 "${TO_WRAPPER}" "${secs}" "$@"
 }
 
+# A tool's reported version, as its first dotted-number token: Bundler 4 prints
+# a bare "4.0.9" where Bundler 2 printed "Bundler version 2.0.9", so a fixed
+# field index records an installed tool as absent.
+tool_version() {
+  local out
+  out="$("$@" 2>/dev/null | version_token)"
+  # Some report their version on stderr; composer prints warnings there first.
+  [ -n "${out}" ] || out="$("$@" 2>&1 | version_token)"
+  if [ -n "${out}" ]; then printf '%s' "${out}"; else printf 'missing'; fi
+}
+
+version_token() {
+  head -5 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1
+}
+
 # Per-target test phase. Two sub-steps logged separately:
 #   <name>.deps.<lang>.log   — language-native dependency install
 #   <name>.test.<lang>.log   — language-native test runner
@@ -411,6 +444,7 @@ run_target_tests() {
   echo "config target_timeout=${TARGET_TIMEOUT}"
   echo "config build_timeout=${BUILD_TIMEOUT}"
   echo "config keep=${KEEP}"
+  echo "config clean_after=${CLEAN_AFTER}"
   echo "config run_tests=${RUN_TESTS}"
   echo "config test_timeout=${TEST_TIMEOUT}"
   if [ -n "${SDKGEN_PATH}" ]; then echo "config sdkgen_path=${SDKGEN_PATH}"; fi
@@ -423,19 +457,23 @@ run_target_tests() {
   echo "config infrapack_path=${INFRAPACK_PATH}"
   if [ -n "${CREATE_SDKGEN_PATH}" ]; then echo "config create_sdkgen_path=${CREATE_SDKGEN_PATH}"; fi
   if [ -n "${ONLY}" ]; then echo "config only=${ONLY}"; fi
-  echo "tool node=$(node --version 2>/dev/null || echo missing)"
-  echo "tool npm=$(npm --version 2>/dev/null || echo missing)"
-  echo "tool python3=$(python3 --version 2>/dev/null || echo missing)"
+  if [ ${#SCAFFOLD_INSTALL[@]} -gt 0 ]; then echo "config scaffold_install=${SCAFFOLD_INSTALL[*]}"; fi
+  if [ -z "${CREATE_SDKGEN_PATH}" ]; then
+    echo "version @voxgig/create-sdkgen=$(npm view @voxgig/create-sdkgen version 2>/dev/null || echo unknown)"
+  fi
+  echo "tool node=$(tool_version node --version)"
+  echo "tool npm=$(tool_version npm --version)"
+  echo "tool python3=$(tool_version python3 --version)"
   if [ "${RUN_TESTS}" -eq 1 ]; then
-    echo "tool go=$(go version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool pip=$(pip --version 2>/dev/null | awk '{print $2}' || echo missing)"
-    echo "tool php=$(php --version 2>/dev/null | head -1 | awk '{print $2}' || echo missing)"
-    echo "tool composer=$(composer --version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool ruby=$(ruby --version 2>/dev/null | awk '{print $2}' || echo missing)"
-    echo "tool bundle=$(bundle --version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool lua=$(lua -v 2>&1 | head -1 | awk '{print $2}' || echo missing)"
-    echo "tool busted=$(busted --version 2>/dev/null || echo missing)"
-    echo "tool make=$(make --version 2>/dev/null | head -1 | awk '{print $3}' || echo missing)"
+    echo "tool go=$(tool_version go version)"
+    echo "tool pip=$(tool_version pip --version)"
+    echo "tool php=$(tool_version php --version)"
+    echo "tool composer=$(tool_version composer --version)"
+    echo "tool ruby=$(tool_version ruby --version)"
+    echo "tool bundle=$(tool_version bundle --version)"
+    echo "tool lua=$(tool_version lua -v)"
+    echo "tool busted=$(tool_version busted --version)"
+    echo "tool make=$(tool_version make --version)"
   fi
 } >> "${SUMMARY}"
 
@@ -483,8 +521,14 @@ while IFS= read -r line; do
       (cd "${OUT_DIR}" &&
         run_with_timeout ${SCAFFOLD_TIMEOUT} node "${CREATE_SDKGEN_PATH}/bin/create-sdkgen" \
           "${name}" --def "${spec_path}" --folder "${folder}" --no-install &&
-        cd "${folder}/.sdk" && run_with_timeout ${SCAFFOLD_TIMEOUT} npm install) \
+        { [ ${#SCAFFOLD_INSTALL[@]} -gt 0 ] ||
+          { cd "${folder}/.sdk" && run_with_timeout ${SCAFFOLD_TIMEOUT} npm install; }; }) \
         >"${log_base}.scaffold.log" 2>&1
+    elif [ ${#SCAFFOLD_INSTALL[@]} -gt 0 ]; then
+      (cd "${OUT_DIR}" && \
+        run_with_timeout ${SCAFFOLD_TIMEOUT} \
+          bash -c "npm create @voxgig/sdkgen@latest ${name} -- --def '${spec_path}' --folder '${folder}' --no-install") \
+          >"${log_base}.scaffold.log" 2>&1
     else
       (cd "${OUT_DIR}" && \
         run_with_timeout ${SCAFFOLD_TIMEOUT} \
@@ -496,6 +540,27 @@ while IFS= read -r line; do
     if [ ${rc_scaffold} -ne 0 ] || [ ! -d "${folder}/.sdk" ]; then
       echo "!! [${name}] scaffold FAILED rc=${rc_scaffold}" | tee -a "${SUMMARY}"
       echo "result=scaffold_failed" >> "${SUMMARY}"
+      ts_end=$(date +%s)
+      echo "duration_seconds=$((ts_end - ts_start))" >> "${SUMMARY}"
+      continue
+    fi
+  fi
+
+  # Phase 1b: install the scaffold's dependencies with the ephemeral overrides.
+  # The scaffold's own install runs a postinstall script that loads apidef, so
+  # an override has to be in place for that install, not applied after it —
+  # hence --no-install above. Runs before the local links so npm cannot
+  # rewrite them.
+  if [ ${#SCAFFOLD_INSTALL[@]} -gt 0 ]; then
+    echo ">> [${name}] scaffold-install ${SCAFFOLD_INSTALL[*]}" | tee -a "${SUMMARY}"
+    (cd "${folder}/.sdk" && \
+      run_with_timeout ${SCAFFOLD_TIMEOUT} npm install --no-save "${SCAFFOLD_INSTALL[@]}") \
+      >"${log_base}.scaffold-install.log" 2>&1
+    rc_si=$?
+    echo "scaffold_install_rc=${rc_si}" >> "${SUMMARY}"
+    if [ ${rc_si} -ne 0 ]; then
+      echo "!! [${name}] scaffold-install FAILED rc=${rc_si}" | tee -a "${SUMMARY}"
+      echo "result=scaffold_install_failed" >> "${SUMMARY}"
       ts_end=$(date +%s)
       echo "duration_seconds=$((ts_end - ts_start))" >> "${SUMMARY}"
       continue
@@ -539,6 +604,22 @@ while IFS= read -r line; do
     done
     echo "create_sdkgen_overlay_rc=${rc_overlay}" >> "${SUMMARY}"
   fi
+
+  # Record what the scaffold resolved, so a report says which package versions
+  # were validated and not merely when the run happened.
+  node - "${folder}/.sdk" <<'JS' >> "${SUMMARY}"
+const Fs = require('node:fs'), Path = require('node:path')
+const modules = Path.join(process.argv[2], 'node_modules')
+const names = ['@voxgig/sdkgen', '@voxgig/apidef', '@voxgig/model', '@voxgig/docgen',
+  '@voxgig/sdkgen-langpack', '@voxgig/sdkgen-infrapack', '@voxgig/struct',
+  'aontu', 'jostraca', '@tabnas/parser', '@tabnas/yaml', '@tabnas/jsonic']
+for (const name of names) {
+  try {
+    const file = Path.join(modules, name, 'package.json')
+    console.log('version ' + name + '=' + JSON.parse(Fs.readFileSync(file, 'utf8')).version)
+  } catch (e) { /* not installed in this scaffold */ }
+}
+JS
 
   # Phase 2: add each target
   for t in "${TARGETS[@]}"; do
@@ -639,6 +720,11 @@ JS
     for t in "${TARGETS[@]}"; do
       run_target_tests "${name}" "${folder}" "${log_base}" "${t}"
     done
+  fi
+
+  if [ "${CLEAN_AFTER}" -eq 1 ] && [ "${KEEP}" -eq 0 ]; then
+    rm -rf "${folder}"
+    echo "cleaned=1" >> "${SUMMARY}"
   fi
 
   ts_end=$(date +%s)

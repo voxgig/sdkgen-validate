@@ -2,7 +2,12 @@
 """summarize — turn a validate-sdkgen run-dir into REPORT.md + report.json.
 
 Reads <run-dir>/summary.log (the key=value stream emitted by validate-sdkgen)
-and produces a per-spec, per-target scoreboard.
+and produces a per-spec, per-target scoreboard plus the package versions the
+run resolved.
+
+Both outputs are shareable artifacts: filesystem paths are reduced to their
+last two segments, so a committed report carries no absolute path from the
+machine that produced it. summary.log keeps the unabridged paths.
 """
 import argparse
 import json
@@ -14,7 +19,9 @@ from pathlib import Path
 
 PHASE_KEYS = (
     "scaffold_rc",
+    "scaffold_install_rc",
     "build_rc",
+    "generate_warmup_rc",
     "generate_rc",
     "test_model_rc",
     "duration_seconds",
@@ -22,6 +29,31 @@ PHASE_KEYS = (
 
 # RC -> short label
 RC_TIMEOUT = {124: "TIMEOUT", 137: "KILLED"}
+
+# Config keys whose values are filesystem paths.
+PATH_KEYS = (
+    "defs", "out", "run_dir", "specs", "sdkgen_path", "apidef_path",
+    "model_path", "aontu_path", "docgen_path", "create_sdkgen_path",
+    "langpack_path", "infrapack_path",
+)
+
+CONFIG_KEYS = (
+    "defs", "out", "specs", "targets", "gen_timeout", "scaffold_timeout",
+    "target_timeout", "build_timeout", "test_timeout", "keep", "clean_after",
+    "run_tests", "no_docs", "scaffold_install", "only", "sdkgen_path",
+    "apidef_path", "model_path", "aontu_path", "docgen_path",
+    "create_sdkgen_path", "langpack_path", "infrapack_path",
+)
+
+
+def shorten_path(value: str) -> str:
+    """Reduce an absolute path to its last two segments."""
+    if not value.startswith("/"):
+        return value
+    parts = [part for part in value.split("/") if part]
+    if len(parts) <= 2:
+        return "/".join(parts)
+    return ".../" + "/".join(parts[-2:])
 
 
 def parse_summary(path: Path):
@@ -41,7 +73,10 @@ def parse_summary(path: Path):
     deps_rc_re = re.compile(r"^deps_([\w-]+)_rc=(-?\d+)$")
     test_rc_re = re.compile(r"^test_([\w-]+)_rc=(-?\d+)$")
     config_re = re.compile(r"^config (\w+)=(.*)$")
+    other_rc_re = re.compile(r"^([\w-]+_rc)=(-?\d+)$")
     tool_re = re.compile(r"^tool (\w+)=(.*)$")
+    version_re = re.compile(r"^version (\S+)=(.*)$")
+    versions = {}
 
     for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
         line = raw.rstrip()
@@ -59,7 +94,15 @@ def parse_summary(path: Path):
 
         m = config_re.match(line)
         if m:
-            config[m.group(1)] = m.group(2)
+            key, value = m.group(1), m.group(2)
+            config[key] = shorten_path(value) if key in PATH_KEYS else value
+            continue
+
+        m = version_re.match(line)
+        if m:
+            versions.setdefault(m.group(1), set()).add(m.group(2))
+            if cur is not None:
+                cur["versions"][m.group(1)] = m.group(2)
             continue
 
         m = tool_re.match(line)
@@ -75,7 +118,9 @@ def parse_summary(path: Path):
                 "spec_path": None,
                 "result": None,
                 "scaffold_rc": None,
+                "scaffold_install_rc": None,
                 "build_rc": None,
+                "generate_warmup_rc": None,
                 "generate_rc": None,
                 "test_model_rc": None,
                 "duration_seconds": None,
@@ -84,6 +129,8 @@ def parse_summary(path: Path):
                 "outputs": {},
                 "deps": {},
                 "tests": {},
+                "other": {},
+                "versions": {},
             }
             runs.append(cur)
             continue
@@ -92,7 +139,7 @@ def parse_summary(path: Path):
             continue
 
         if line.startswith("spec_path="):
-            cur["spec_path"] = line.split("=", 1)[1]
+            cur["spec_path"] = shorten_path(line.split("=", 1)[1])
             continue
 
         if line.startswith("result="):
@@ -103,13 +150,13 @@ def parse_summary(path: Path):
             cur["scaffold_skipped"] = True
             continue
 
-        for k in PHASE_KEYS:
-            if line.startswith(f"{k}="):
-                try:
-                    cur[k] = int(line.split("=", 1)[1])
-                except ValueError:
-                    cur[k] = None
-                break
+        phase = next((k for k in PHASE_KEYS if line.startswith(f"{k}=")), None)
+        if phase:
+            try:
+                cur[phase] = int(line.split("=", 1)[1])
+            except ValueError:
+                cur[phase] = None
+            continue
 
         m = target_rc_re.match(line)
         if m:
@@ -131,8 +178,16 @@ def parse_summary(path: Path):
             cur["tests"][m.group(1)] = int(m.group(2))
             continue
 
+        # Any other phase rc the driver records. Kept so a phase that fails the
+        # run cannot be invisible in the report just because it has no column.
+        m = other_rc_re.match(line)
+        if m:
+            cur["other"][m.group(1)] = int(m.group(2))
+            continue
+
     return {
         "config": config,
+        "versions": {k: sorted(v) for k, v in sorted(versions.items())},
         "started_at": started_at,
         "finished_at": finished_at,
         "elapsed_seconds": elapsed,
@@ -171,46 +226,87 @@ def to_markdown(parsed, targets):
     if cfg:
         lines.append("")
         lines.append("## Configuration")
-        for k in ("defs", "out", "specs", "targets",
-                  "gen_timeout", "scaffold_timeout",
-                  "target_timeout", "build_timeout", "keep", "only"):
-            if k in cfg:
+        for k in CONFIG_KEYS:
+            if cfg.get(k) not in (None, ""):
                 lines.append(f"- `{k}` = `{cfg[k]}`")
         tools = cfg.get("tools") or {}
         if tools:
             lines.append("")
             lines.append("Tools:")
             for k, v in tools.items():
-                lines.append(f"- `{k}` = `{v}`")
+                lines.append(f"- `{k}` = `{v or 'unknown'}`")
+
+    if parsed["versions"]:
+        lines.append("")
+        lines.append("## Packages validated")
+        lines.append("")
+        lines.append("| Package | Version |")
+        lines.append("|---|---|")
+        for name, found in parsed["versions"].items():
+            lines.append(f"| `{name}` | `{', '.join(found)}` |")
+        # A release published mid-run leaves two versions in one report, so the
+        # table alone cannot say which specs were measured against which.
+        for name, found in parsed["versions"].items():
+            if len(found) < 2:
+                continue
+            by_version = {}
+            for run in parsed["runs"]:
+                got = run["versions"].get(name)
+                if got is not None:
+                    by_version.setdefault(got, []).append(run["name"])
+            parts = [f"`{v}` for {', '.join(by_version[v])}"
+                     for v in found if v in by_version]
+            lines.append("")
+            lines.append(f"`{name}` changed during the run: " + "; ".join(parts) + ".")
 
     runs = parsed["runs"]
+    show_install = any(r["scaffold_install_rc"] is not None for r in runs)
     lines.append("")
     lines.append("## Scoreboard")
     lines.append("")
-    header = ["#", "Name", "Spec", "Scaffold", "Build", "Generate", "TestModel", "Targets", "Outputs", "Duration"]
+    header = ["#", "Name", "Spec", "Scaffold"]
+    if show_install:
+        header.append("ScaffoldInst")
+    header += ["Build", "Warmup", "Generate", "TestModel",
+               "Targets", "Outputs", "Duration"]
     lines.append("| " + " | ".join(header) + " |")
     lines.append("|" + "|".join(["---"] * len(header)) + "|")
 
     pass_count = 0
     for i, r in enumerate(runs, 1):
         scaffold = "skip" if r["scaffold_skipped"] else cell_rc(r["scaffold_rc"])
-        build = cell_rc(r["build_rc"])
-        gen = cell_rc(r["generate_rc"])
-        test_model = cell_rc(r["test_model_rc"])
         ok_targets = sum(1 for t in targets if r["targets"].get(t) == 0)
         ok_outputs = sum(1 for t in targets if r["outputs"].get(t))
-        targets_cell = f"{ok_targets}/{len(targets)}"
-        outputs_cell = f"{ok_outputs}/{len(targets)}"
         dur = f"{r['duration_seconds']}s" if r["duration_seconds"] is not None else "—"
         if r["generate_rc"] == 0 and ok_outputs == len(targets):
             pass_count += 1
-        lines.append("| " + " | ".join([
-            str(i), r["name"], r["spec"], scaffold, build, gen, test_model,
-            targets_cell, outputs_cell, dur,
-        ]) + " |")
+        row = [str(i), r["name"], r["spec"], scaffold]
+        if show_install:
+            row.append(cell_rc(r["scaffold_install_rc"]))
+        row += [
+            cell_rc(r["build_rc"]),
+            cell_rc(r["generate_warmup_rc"]),
+            cell_rc(r["generate_rc"]),
+            cell_rc(r["test_model_rc"]),
+            f"{ok_targets}/{len(targets)}",
+            f"{ok_outputs}/{len(targets)}",
+            dur,
+        ]
+        lines.append("| " + " | ".join(row) + " |")
 
     lines.append("")
     lines.append(f"**Totals:** {pass_count}/{len(runs)} specs produced output for every target.")
+    lines.append("")
+    lines.append("Warmup is the first generate pass, which the totals do not score.")
+
+    others = [(r["name"], k, v) for r in runs
+              for k, v in sorted(r["other"].items()) if v != 0]
+    if others:
+        lines.append("")
+        lines.append("## Other non-zero phase results")
+        lines.append("")
+        for name, key, rc in others:
+            lines.append(f"- `{name}`: `{key}` = {cell_rc(rc)}")
 
     # Per-target detail table
     lines.append("")

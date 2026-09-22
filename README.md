@@ -3,9 +3,12 @@
 Scripts to validate [`@voxgig/sdkgen`](https://www.npmjs.com/package/@voxgig/sdkgen)
 end-to-end across multiple OpenAPI specs and every supported language target.
 
-**Current state: 98/98 test suites pass** across 14 specs × 7 targets against
-the upstream `@voxgig/sdkgen`, `@voxgig/apidef`, and `@voxgig/create-sdkgen`
-HEADs. The latest run lives in [`reports/latest/`](reports/latest/).
+**Current state** is whatever the last run measured:
+[`reports/latest/REPORT.md`](reports/latest/REPORT.md) carries the package
+versions validated, the per-spec phase results, the per-target scoreboard, and
+the two totals lines (`Totals:` for generated output, `Test totals:` for the
+generated SDKs' own suites). Read the counts there. They are deliberately not
+repeated here, because a number in prose outlives the run that produced it.
 
 [`baseline/`](baseline/) preserves the original 69/98 scoreboard
 ([`BASELINE.md`](baseline/BASELINE.md)) for historical reference, the in-tree
@@ -15,9 +18,16 @@ plan to reach 98/98 ([`PLAN.md`](baseline/PLAN.md)).
 For each spec the runner executes the canonical bootstrap path:
 
 1. **scaffold** — `npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>`
-2. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each of `ts, js, go, py, php, rb, lua` (the seven targets bundled in `@voxgig/sdkgen/project/.sdk/model/target/`).
+2. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each target in `--targets` (default `ts, js, go, py, php, rb, lua`).
 3. **build** — `npm run build` inside `<out>/.sdk` (compiles the per-spec generator project).
-4. **generate** — `npm run generate` (runs `voxgig-model model/sdk.aontu`, which iterates every registered target in a single pass).
+4. **generate** — `npm run generate` (docgen's project prepare, `tsc --build src`, then `voxgig-model` over `model/sdk.aon` and `test/test.aon`, which iterates every registered target in a single pass).
+
+Generate runs twice per spec. The first pass is a warmup, logged to
+`<name>.generate.0.log` and reported only as `generate_warmup_rc`; between the
+two the driver rebuilds the test fixtures (`npm run test-model`), so the
+fixtures the generated suites run against come from the sdkgen under test
+rather than from the scaffold snapshot. The second pass is the one the report
+scores.
 
 After every spec it inspects the result folder and records (a) the per-phase
 exit code, (b) the per-target `target add` exit code, and (c) whether the
@@ -25,25 +35,49 @@ top-level `<out>/<name>-sdk/<lang>/` output folder for each target now exists.
 
 With `--test`, two additional phases run per generated target language:
 
-6. **deps** — language-native dependency install (see table below).
-7. **test** — language-native test runner (`npm test` or `make test`).
+5. **deps** — language-native dependency install (see table below).
+6. **test** — language-native test runner (`npm test` or `make test`).
 
 | Lang | deps | test |
 | --- | --- | --- |
 | ts  | `npm install && npm run build` | `npm test` |
 | js  | `npm install`                  | `npm test` |
 | go  | (none)                         | `make test` (`go test ./... -v`) |
-| py  | `pip install -e . pytest`      | `make test` (`python -m pytest test/`) |
+| py  | `python3 -m pip install -e . pytest` | `make test` (`python -m pytest test/`) |
 | php | `composer install`             | `make test` (`./vendor/bin/phpunit`) |
 | rb  | `bundle install`               | `make test` (`ruby -Ilib test/exists_test.rb`) |
 | lua | (none)                         | `make test` (`busted test/`) |
 
 Toolchain availability is **prechecked** at startup when `--test` is set —
 any missing binary is a hard error. Required binaries: `node npm` (ts/js),
-`go make` (go), `python3 pip make` (py), `php composer make` (php),
-`ruby bundle make` (rb), `lua busted make` (lua). On a Mac with Homebrew
-Lua, `busted` is typically at `~/.luarocks/bin/busted`; prepend that to
-`PATH` before invoking the script.
+`go make` (go), `python3 make` (py), `php composer make` (php),
+`ruby bundle make` (rb), `lua busted make` (lua). Install `busted` with
+`luarocks install busted`; where LuaRocks installs into a home prefix (a Mac
+with Homebrew Lua puts it in `~/.luarocks/bin`), prepend that to `PATH`
+before invoking the script.
+
+## When a published dependency breaks the run
+
+`--scaffold-install <pkg@ver>` (repeatable) scaffolds with `--no-install` and
+then installs the throwaway `<out>/<name>-sdk/.sdk` with
+`npm install --no-save <pkg@ver>`. It exists for one situation: a *published*
+transitive dependency that throws at require time, which would otherwise end a
+run before `@voxgig/sdkgen` and `@voxgig/apidef` are exercised at all. The
+scaffold's own `npm install` runs a `postinstall` that loads `@voxgig/apidef`,
+so the override has to be part of that install rather than applied after it.
+
+It is ephemeral, by design: the scaffold is a throwaway directory, `--no-save`
+leaves its manifest untouched, and **nothing in this repository is pinned**. Do
+not translate a working `--scaffold-install` into a pin, an `overrides` block or
+a `file:` dependency in a committed manifest or lockfile — this repository
+tracks none and validates what the registry actually serves. The run records
+the flag in `summary.log`, and `summarize` prints it in the report's
+Configuration block, so a report always states that an override was in play.
+
+Check the failure before reaching for it. A require-time throw from a
+third-party package is one thing; a failure in generation, in a generated SDK,
+or in a generated test suite belongs to `@voxgig/sdkgen` or `@voxgig/apidef` and
+must be reported as such.
 
 ## Layout
 
@@ -52,9 +86,16 @@ bin/
   validate-sdkgen   # main driver (bash)
   summarize         # turns summary.log into REPORT.md + report.json
   run-to.py         # process-group timeout wrapper (macOS lacks timeout(1))
+  link-local.cjs    # symlinks a local checkout into a scaffold's node_modules
 specs/
   default.txt       # 14 canonical specs (smallest first)
   smoke.txt         # 3 small specs for a quick sanity check
+tools/
+  comment-gate.cjs  # source comment policy, with its tests
+  summarize.test.cjs # the summarizer's tests
+  driver.test.cjs   # the driver's usage/argument tests
+reports/
+  latest/           # the last run's REPORT.md + report.json, committed
 ```
 
 ## Prerequisites
@@ -63,6 +104,17 @@ specs/
 - Python 3 (for the timeout wrapper + summariser)
 - A directory of OpenAPI spec files. The default location is
   `~/Projects/voxgig/apidef-validate/def/` — override with `--defs`.
+  `apidef-validate` owns those files; this repository keeps no copies.
+
+## This repository's own gates
+
+```sh
+make test
+```
+
+runs the comment-policy gate and its tests, the local-link test, and the
+summarizer and driver tests. It generates nothing — a validation run is
+`make smoke` or `make full`. CI runs the comment gate on every push.
 
 ## Usage
 
@@ -72,11 +124,22 @@ Quick smoke run (3 small specs, all 7 targets):
 ./bin/validate-sdkgen --specs specs/smoke.txt
 ```
 
-Full canonical run (14 specs, all 7 targets — ~38 minutes wall clock against
-local sdkgen + apidef HEADs; large specs may hit the generate timeout):
+Full canonical run (14 specs, all 7 targets). The largest specs dominate the
+wall clock and can exceed the default generate budget, so raise it:
 
 ```sh
-./bin/validate-sdkgen
+./bin/validate-sdkgen --gen-timeout 1800
+```
+
+Every generated tree is kept, which the full list cannot always afford: one
+spec's tree runs to a few GB once each language has installed its own
+dependencies. `--clean-after` deletes each `<out>/<name>-sdk` as soon as its
+phases are done, so the peak is one spec rather than all fourteen. The phase
+logs are unaffected — they live in the run dir — and a single spec can be
+re-run without the flag to inspect a tree:
+
+```sh
+./bin/validate-sdkgen --gen-timeout 1800 --clean-after
 ```
 
 Run only specific specs from the list:
@@ -104,6 +167,18 @@ Smoke run with the generated SDKs' own test suites:
 PATH="$HOME/.luarocks/bin:$PATH" \
   ./bin/validate-sdkgen --specs specs/smoke.txt --test
 ```
+
+Working around a published dependency that throws at require time (see above —
+ephemeral, and never a pin in this repository):
+
+```sh
+./bin/validate-sdkgen --specs specs/smoke.txt --test \
+  --scaffold-install <package>@<version>
+```
+
+A named package and version in that example would read as an instruction long
+after the release it worked around was superseded, so the flag is documented
+without one.
 
 All options:
 
@@ -162,11 +237,31 @@ solar:solar-1.0.0-openapi-3.0.0.yaml
 
 Each invocation writes to `<out>/_runs/<UTC-timestamp>/`:
 
-- `summary.log` — line-oriented `key=value` stream consumed by `summarize`
-- `<name>.scaffold.log`, `<name>.target.<lang>.log`,
-  `<name>.build.log`, `<name>.generate.log` — raw stdout+stderr per phase
+- `summary.log` — line-oriented `key=value` stream consumed by `summarize`,
+  including the package versions the scaffold resolved and the unabridged
+  paths the run used
+- `<name>.scaffold.log`, `<name>.scaffold-install.log`,
+  `<name>.target.<lang>.log`, `<name>.build.log`, `<name>.generate.log`,
+  `<name>.deps.<lang>.log`, `<name>.test.<lang>.log` — raw stdout+stderr per
+  phase
 - `REPORT.md` — human-readable scoreboard (per-spec, per-target)
 - `report.json` — machine-readable equivalent
+
+The scoreboard carries a column per phase, `Warmup` being the first generate
+pass. A phase with no column of its own — an override, an overlay — still
+appears under *Other non-zero phase results* when it failed, because the
+driver's exit status counts every phase it records and a report that omitted
+one would disagree with it.
+
+`REPORT.md` and `report.json` are the shareable pair, so they are written to be
+machine-independent: every filesystem path is shortened to its last two
+segments. A report copied into [`reports/latest/`](reports/latest/) therefore
+carries no absolute path from the machine that produced it. The unabridged
+paths stay in `summary.log`, which is not committed.
+
+A report also names what was validated: `summarize` reads the
+`version <package>=<v>` lines the driver records from the scaffold's
+`node_modules` and prints them as a *Packages validated* table.
 
 The validate driver invokes `summarize` automatically at the end. Re-run it
 manually any time:
@@ -177,12 +272,13 @@ manually any time:
 
 ## Timeouts
 
-`@voxgig/sdkgen`'s generate phase is the only one that routinely needs a long
-budget on large specs (gitlab/github/cloudsmith all topped 600 s in the prior
-run). Override per-phase budgets:
+The generate phase is the one that routinely needs a long budget on large
+specs, and the driver runs it twice per spec (a warmup pass, then the pass it
+reports). The per-language deps phase can need one too, where a package
+manager falls back to fetching from source. Override the budgets:
 
 ```sh
-./bin/validate-sdkgen --gen-timeout 1800
+./bin/validate-sdkgen --gen-timeout 1800 --test-timeout 900
 ```
 
 Exit codes from the timeout wrapper:
@@ -193,7 +289,10 @@ Exit codes from the timeout wrapper:
 
 ## Supported targets
 
-The seven languages are taken straight from `@voxgig/sdkgen`'s bundled
-project skeleton (`node_modules/@voxgig/sdkgen/project/.sdk/model/target/`):
-`ts, js, go, py, php, rb, lua`. If `@voxgig/sdkgen` adds a target, add it to
-the `--targets` argument; the driver iterates whatever you pass.
+The default target list is `ts, js, go, py, php, rb, lua`. `@voxgig/sdkgen`
+bundles more targets than that (see its own project skeleton,
+`node_modules/@voxgig/sdkgen/project/.sdk/model/target/`), and the packaged
+targets live in `@voxgig/sdkgen-langpack` and `@voxgig/sdkgen-infrapack`. The
+driver iterates whatever `--targets` names; with `--test` each named target
+also needs a toolchain entry in the driver's `toolchain_for`, or the run stops
+at the precheck.
