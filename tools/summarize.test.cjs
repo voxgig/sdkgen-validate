@@ -34,11 +34,12 @@ function fixture(extra = '') {
     'config run_tests=1',
     'config clean_after=1',
     'config scaffold_install=@tabnas/parser@0.10.0',
-    'version @voxgig/sdkgen=4.23.0',
+    'version @voxgig/create-sdkgen=0.26.0',
     '=== petstore :: petstore.json ===',
     `spec_path=${DEFS}/petstore.json`,
     'scaffold_rc=0',
     'scaffold_install_rc=0',
+    'version @voxgig/sdkgen=4.23.0',
     'version @voxgig/apidef=8.15.0',
     'target_ts_rc=0',
     'target_go_rc=0',
@@ -82,6 +83,31 @@ test('the report names the package versions the run resolved', () => {
     assert.match(run.markdown, /`@voxgig\/apidef` \| `8\.15\.0`/)
     assert.deepEqual(run.report.versions['@voxgig/apidef'], ['8.15.0'])
     assert.equal(run.report.runs[0].versions['@voxgig/apidef'], '8.15.0')
+  } finally { run.cleanup() }
+})
+
+// A release published mid-run is measured by some specs and not others.
+test('a version that changed mid-run is attributed to its specs', () => {
+  const run = summarize(fixture() + [
+    '',
+    '=== solar :: solar.yaml ===',
+    'scaffold_rc=0',
+    'version @voxgig/sdkgen=4.24.0',
+    'generate_rc=0',
+    'duration_seconds=9',
+  ].join('\n'))
+  try {
+    assert.match(run.markdown, /`@voxgig\/sdkgen` \| `4\.23\.0, 4\.24\.0`/)
+    assert.match(run.markdown,
+      /`@voxgig\/sdkgen` changed during the run: `4\.23\.0` for petstore; `4\.24\.0` for solar\./)
+    assert.equal(run.report.runs[1].versions['@voxgig/sdkgen'], '4.24.0')
+  } finally { run.cleanup() }
+})
+
+test('a version that held for the whole run is not called a change', () => {
+  const run = summarize(fixture())
+  try {
+    assert.equal(run.markdown.includes('changed during the run'), false)
   } finally { run.cleanup() }
 })
 

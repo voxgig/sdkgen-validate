@@ -244,6 +244,20 @@ def to_markdown(parsed, targets):
         lines.append("|---|---|")
         for name, found in parsed["versions"].items():
             lines.append(f"| `{name}` | `{', '.join(found)}` |")
+        # A release published mid-run leaves two versions in one report, so the
+        # table alone cannot say which specs were measured against which.
+        for name, found in parsed["versions"].items():
+            if len(found) < 2:
+                continue
+            by_version = {}
+            for run in parsed["runs"]:
+                got = run["versions"].get(name)
+                if got is not None:
+                    by_version.setdefault(got, []).append(run["name"])
+            parts = [f"`{v}` for {', '.join(by_version[v])}"
+                     for v in found if v in by_version]
+            lines.append("")
+            lines.append(f"`{name}` changed during the run: " + "; ".join(parts) + ".")
 
     runs = parsed["runs"]
     show_install = any(r["scaffold_install_rc"] is not None for r in runs)
