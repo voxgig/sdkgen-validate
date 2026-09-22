@@ -97,6 +97,7 @@ specs/
   smoke.txt         # 3 small specs for a quick sanity check
 tools/
   comment-gate.cjs  # source comment policy, with its tests
+  dep-gate.cjs      # dependency-source policy, with its tests
   summarize.test.cjs # the summarizer's tests
   driver.test.cjs   # the driver's usage/argument tests
 reports/
@@ -119,9 +120,22 @@ reports/
 make test
 ```
 
-runs the comment-policy gate and its tests, the local-link test, and the
-summarizer and driver tests. It generates nothing — a validation run is
-`make smoke` or `make full`. CI runs the comment gate on every push.
+runs the comment-policy gate and its tests, the dependency-source gate and
+its tests, the local-link test, and the summarizer and driver tests. It
+generates nothing — a validation run is `make smoke` or `make full`.
+
+`make deps` on its own is the dependency-source gate: a committed dependency
+names a published npm package or a GitHub reference, and anything else —
+`file:`, `link:`, a bare path, a packed archive, a Go `replace` or `go.work`
+reaching outside the repository, a Cargo `path` leaving it, an escaping
+symlink, an `.npmrc` naming another registry — is local development wiring
+that has to be undone before the commit. It judges only what git TRACKS, so
+that wiring stays legal until it is staged. `make deps-test` is the gate's own
+suite, and `tools/dep-gate.json` is the allowlist: an entry needs a reason,
+and the gate reports one that has stopped matching anything.
+
+CI runs the comment gate on every push, and `.githooks/pre-push`
+(`make hooks`) runs both gates before anything leaves the machine.
 
 ## Usage
 

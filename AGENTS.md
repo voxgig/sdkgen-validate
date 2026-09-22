@@ -44,6 +44,17 @@ Archives are appropriate when testing package contents or installation from a
 packed release. Put those artifacts in a temporary test directory and clean
 up artifacts created by the test afterward; do not scatter them across repos.
 
+`make deps` is the machine-checkable half of that rule. `tools/dep-gate.cjs`
+reads every committed npm manifest and lockfile, every `go.mod` and
+`Cargo.toml`, `.npmrc`, and every committed symlink and archive, and requires
+each committed dependency to name a published package or a GitHub reference.
+It judges what git TRACKS, deliberately, so a `file:` or a `replace` you added
+to measure something stays legal right up to the moment you stage it. It runs
+in `make test` and in `.githooks/pre-push` (`make hooks` installs the hook),
+and `make deps-test` runs its own suite. A dependency it reports but that is
+genuinely legitimate goes in `tools/dep-gate.json` with a reason; the gate
+fails an entry with no reason, and fails an entry that no longer matches
+anything, so the list cannot outlive what it excused.
 
 ## Source code comments
 
