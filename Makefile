@@ -15,6 +15,7 @@ help:
 	@echo "  full-test     - full + run each generated SDK's own test suite"
 	@echo "  validate      - alias for 'full'"
 	@echo "  summarize RUN=<dir> - regenerate REPORT.md / report.json for a run"
+	@echo "  test          - this repository's own gates (no SDK generation)"
 	@echo ""
 	@echo "Pass extra flags via ARGS, e.g.:"
 	@echo "  make smoke ARGS='--only petstore --targets ts,go'"
@@ -38,6 +39,10 @@ summarize:
 	@test -n "$(RUN)" || { echo "usage: make summarize RUN=<run-dir>"; exit 2; }
 	$(SUMMARIZE) --run-dir $(RUN)
 
+# The repository's own gates. These check the harness, not @voxgig/sdkgen:
+# a validation run is `make smoke` / `make full`.
+test: comments comments-test test-local-links test-summarize
+
 .PHONY: comments comments-test hooks
 comments:
 	node tools/comment-gate.cjs
@@ -48,6 +53,10 @@ comments-test:
 hooks:
 	git config core.hooksPath .githooks
 
-.PHONY: test-local-links
+.PHONY: test-local-links test-summarize
 test-local-links:
 	node --test test-link-local.cjs
+
+test-summarize:
+	node --test tools/summarize.test.cjs
+
