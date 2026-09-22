@@ -126,8 +126,8 @@ generates nothing — a validation run is `make smoke` or `make full`.
 
 `make deps` on its own is the dependency-source gate: a committed dependency
 names a published npm package or a GitHub reference, and anything else —
-`file:`, `link:`, a bare path, a packed archive, a Go `replace` or `go.work`
-reaching outside the repository, a Cargo `path` leaving it, an escaping
+`file:`, `link:`, a bare path, a packed archive, a Go `replace` reaching
+outside the repository, a committed `go.work`, a Cargo `path` leaving it, an escaping
 symlink, an `.npmrc` naming another registry — is local development wiring
 that has to be undone before the commit. It judges only what git TRACKS, so
 that wiring stays legal until it is staged. `make deps-test` is the gate's own
