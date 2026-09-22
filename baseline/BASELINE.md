@@ -1,10 +1,11 @@
 # sdk-validate baseline — 2026-05-01
 
-This directory pins the **current** end-to-end result of running
-`bin/validate-sdkgen` against the canonical 14-spec list with the local
+This directory is a dated record, kept for historical reference. It is not
+the current state: read `reports/latest/REPORT.md` for that. It reports the
+end-to-end result of running `bin/validate-sdkgen` against the canonical
+14-spec list, as of the date in the heading above, with the local
 `@voxgig/sdkgen` working copy patched up to commit `ec505e2` (v0.40.1) plus
-the in-tree changes documented in `CHANGES.md`. Future runs are graded
-relative to this snapshot.
+the in-tree changes documented in `CHANGES.md`.
 
 - **Run dir** (full artifacts, kept until garbage-collected by the user):
   `~/Projects/voxgig-sdk/_runs/20260501T174858Z/`
@@ -54,6 +55,10 @@ Total elapsed wall clock: 2,259 s (≈38 min).
 
 ## Environment
 
+What the machine that produced this run happened to have installed, recorded
+for reproduction. It is not a requirement list and not a statement about any
+other machine.
+
 - node `v24.11.1`, npm `11.6.2`
 - python `3.12.4`, pip `24.0`
 - go `1.26.1`, make `3.81`
@@ -62,6 +67,9 @@ Total elapsed wall clock: 2,259 s (≈38 min).
 - lua `5.5.0`, busted `2.3.0` (via `~/.luarocks/bin`)
 
 ## Reproducer
+
+The paths below are the ones this run used, on one workstation, and are kept
+verbatim so the run can be read back. Substitute your own checkout locations.
 
 ```sh
 cd /Users/richard/Projects/voxgig/sdkgen && npm run build
