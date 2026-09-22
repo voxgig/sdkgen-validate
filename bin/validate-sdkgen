@@ -650,9 +650,17 @@ JS
   done
 
   if [ "${NO_DOCS}" -eq 1 ]; then
-    node - "${folder}/.sdk/model/config.aon" <<'JS'
+    node - "${folder}/.sdk/model/config" <<'JS'
 const Fs = require('node:fs')
-const file = process.argv[2]
+// Either extension: `.aontu` is what a project is scaffolded with, `.aon` what
+// one made before the rename still carries.
+const file = ['.aontu', '.aon']
+  .map((ext) => process.argv[2] + ext)
+  .find((path) => Fs.existsSync(path))
+if (null == file) {
+  console.error('no model config beside ' + process.argv[2])
+  process.exit(1)
+}
 const source = Fs.readFileSync(file, 'utf8')
 if (!source.includes('main: kit: doc: active: false')) {
   Fs.appendFileSync(file, '\nmain: kit: doc: active: false\n')

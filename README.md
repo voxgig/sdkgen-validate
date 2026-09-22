@@ -20,7 +20,7 @@ For each spec the runner executes the canonical bootstrap path:
 1. **scaffold** — `npm create @voxgig/sdkgen@latest <name> -- --def <spec> --folder <out>`
 2. **target add ×N** — `npx voxgig-sdkgen target add <lang>` for each target in `--targets` (default `ts, js, go, py, php, rb, lua`).
 3. **build** — `npm run build` inside `<out>/.sdk` (compiles the per-spec generator project).
-4. **generate** — `npm run generate` (docgen's project prepare, `tsc --build src`, then `voxgig-model` over `model/sdk.aon` and `test/test.aon`, which iterates every registered target in a single pass).
+4. **generate** — `npm run generate` (docgen's project prepare, `tsc --build src`, then `voxgig-model` over `model/sdk.aontu` and `test/test.aontu`, which iterates every registered target in a single pass).
 
 Generate runs twice per spec. The first pass is a warmup, logged to
 `<name>.generate.0.log` and reported only as `generate_warmup_rc`; between the
