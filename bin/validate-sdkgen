@@ -346,6 +346,21 @@ run_with_timeout() {
   python3 "${TO_WRAPPER}" "${secs}" "$@"
 }
 
+# A tool's reported version, as its first dotted-number token: Bundler 4 prints
+# a bare "4.0.9" where Bundler 2 printed "Bundler version 2.0.9", so a fixed
+# field index records an installed tool as absent.
+tool_version() {
+  local out
+  out="$("$@" 2>/dev/null | version_token)"
+  # Some report their version on stderr; composer prints warnings there first.
+  [ -n "${out}" ] || out="$("$@" 2>&1 | version_token)"
+  if [ -n "${out}" ]; then printf '%s' "${out}"; else printf 'missing'; fi
+}
+
+version_token() {
+  head -5 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1
+}
+
 # Per-target test phase. Two sub-steps logged separately:
 #   <name>.deps.<lang>.log   — language-native dependency install
 #   <name>.test.<lang>.log   — language-native test runner
@@ -446,19 +461,19 @@ run_target_tests() {
   if [ -z "${CREATE_SDKGEN_PATH}" ]; then
     echo "version @voxgig/create-sdkgen=$(npm view @voxgig/create-sdkgen version 2>/dev/null || echo unknown)"
   fi
-  echo "tool node=$(node --version 2>/dev/null || echo missing)"
-  echo "tool npm=$(npm --version 2>/dev/null || echo missing)"
-  echo "tool python3=$(python3 --version 2>/dev/null || echo missing)"
+  echo "tool node=$(tool_version node --version)"
+  echo "tool npm=$(tool_version npm --version)"
+  echo "tool python3=$(tool_version python3 --version)"
   if [ "${RUN_TESTS}" -eq 1 ]; then
-    echo "tool go=$(go version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool pip=$(pip --version 2>/dev/null | awk '{print $2}' || echo missing)"
-    echo "tool php=$(php --version 2>/dev/null | head -1 | awk '{print $2}' || echo missing)"
-    echo "tool composer=$(composer --version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool ruby=$(ruby --version 2>/dev/null | awk '{print $2}' || echo missing)"
-    echo "tool bundle=$(bundle --version 2>/dev/null | awk '{print $3}' || echo missing)"
-    echo "tool lua=$(lua -v 2>&1 | head -1 | awk '{print $2}' || echo missing)"
-    echo "tool busted=$(busted --version 2>/dev/null || echo missing)"
-    echo "tool make=$(make --version 2>/dev/null | head -1 | awk '{print $3}' || echo missing)"
+    echo "tool go=$(tool_version go version)"
+    echo "tool pip=$(tool_version pip --version)"
+    echo "tool php=$(tool_version php --version)"
+    echo "tool composer=$(tool_version composer --version)"
+    echo "tool ruby=$(tool_version ruby --version)"
+    echo "tool bundle=$(tool_version bundle --version)"
+    echo "tool lua=$(tool_version lua -v)"
+    echo "tool busted=$(tool_version busted --version)"
+    echo "tool make=$(tool_version make --version)"
   fi
 } >> "${SUMMARY}"
 
