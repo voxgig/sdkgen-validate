@@ -173,8 +173,12 @@ ephemeral, and never a pin in this repository):
 
 ```sh
 ./bin/validate-sdkgen --specs specs/smoke.txt --test \
-  --scaffold-install @tabnas/parser@0.10.0
+  --scaffold-install <package>@<version>
 ```
+
+A named package and version in that example would read as an instruction long
+after the release it worked around was superseded, so the flag is documented
+without one.
 
 All options:
 
