@@ -313,8 +313,21 @@ is_only_match() {
 
 # Toolchain precheck for --test. User has explicitly opted in to running
 # language-native test suites, so missing tools are an error, not a skip.
+#
+# The runner's own tools are checked too, not only each target's. Every run
+# scaffolds and builds through npm whatever --targets says, and python3 runs
+# both the per-phase timeout wrapper and the summarizer - so a `--targets go`
+# run on a machine without python3 passed a precheck that promised "any
+# missing binary is a hard error" and then failed several phases later.
+RUNNER_BINS="node npm npx python3 git"
+
 if [ "${RUN_TESTS}" -eq 1 ]; then
   missing=""
+  for b in ${RUNNER_BINS}; do
+    if ! command -v "${b}" >/dev/null 2>&1; then
+      missing="${missing}\n  - ${b} (required by every run)"
+    fi
+  done
   for t in "${TARGETS[@]}"; do
     bins="$(toolchain_for "${t}")"
     if [ -z "${bins}" ]; then

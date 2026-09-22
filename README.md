@@ -52,8 +52,11 @@ Toolchain availability is **prechecked** at startup when `--test` is set —
 any missing binary is a hard error. The list below is what a run *requires*,
 not a claim about what any machine has: the precheck resolves each binary on
 the machine in use, which is the only place the answer is knowable. Required
-binaries: `node npm` (ts/js), `go make` (go), `python3 make` (py),
-`php composer make` (php), `ruby bundle make` (rb), `lua busted make` (lua).
+binaries: `node npm npx python3 git` for every run whatever `--targets` says,
+because scaffolding and building go through npm and python3 runs both the
+per-phase timeout wrapper and the summarizer; then per target, `node npm`
+(ts/js), `go make` (go), `python3 make` (py), `php composer make` (php),
+`ruby bundle make` (rb), `lua busted make` (lua).
 Install `busted` with `luarocks install busted`; where LuaRocks installs into
 a home prefix (a Mac with Homebrew Lua puts it in `~/.luarocks/bin`), prepend
 that to `PATH` before invoking the script.
