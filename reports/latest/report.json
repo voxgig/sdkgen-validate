@@ -1,648 +1,80 @@
 {
   "config": {
     "defs": ".../apidef-validate/def",
-    "out": ".../sv/fullout",
-    "run_dir": ".../sv/fullrun",
-    "specs": "specs/default.txt",
+    "out": ".../svpub/out",
+    "run_dir": ".../svpub/run",
+    "specs": ".../specs/default.txt",
     "targets": "ts,js,go,py,php,rb,lua",
-    "gen_timeout": "1800",
-    "scaffold_timeout": "900",
-    "target_timeout": "600",
-    "build_timeout": "900",
+    "gen_timeout": "600",
+    "scaffold_timeout": "600",
+    "target_timeout": "180",
+    "build_timeout": "180",
     "keep": "0",
     "clean_after": "1",
     "run_tests": "1",
-    "test_timeout": "900",
+    "test_timeout": "300",
     "docgen_path": "",
     "no_docs": "0",
     "langpack_path": "",
     "infrapack_path": "",
     "tools": {
-      "node": "v24.21.0",
+      "node": "24.21.0",
       "npm": "11.19.0",
-      "python3": "Python 3.11.15",
-      "go": "go1.24.7",
+      "python3": "3.11.15",
+      "go": "1.24.7",
       "pip": "24.0",
       "php": "8.4.19",
       "composer": "2.8.12",
       "ruby": "3.3.6",
-      "bundle": "",
+      "bundle": "4.0.9",
       "lua": "5.4.6",
-      "busted": "2.3.0",
+      "busted": "2.2.0",
       "make": "4.3"
     }
   },
   "versions": {
     "@tabnas/jsonic": [
-      "0.6.7"
+      "0.7.1"
     ],
     "@tabnas/parser": [
-      "0.11.1"
+      "0.12.2"
     ],
     "@tabnas/yaml": [
-      "0.5.7"
+      "0.5.8"
     ],
     "@voxgig/apidef": [
-      "8.15.0"
+      "8.17.0"
     ],
     "@voxgig/create-sdkgen": [
-      "0.26.0"
+      "0.28.0"
     ],
     "@voxgig/docgen": [
-      "0.26.0"
+      "0.27.0"
     ],
     "@voxgig/model": [
-      "11.1.1"
+      "12.0.0"
     ],
     "@voxgig/sdkgen": [
-      "4.23.0",
-      "4.24.0"
+      "4.25.0"
     ],
     "@voxgig/struct": [
       "0.3.6"
     ],
     "aontu": [
-      "0.72.0"
+      "0.75.0"
     ],
     "jostraca": [
-      "0.38.1"
+      "0.39.0"
     ]
   },
-  "started_at": "2026-09-22T13:43:19Z",
-  "finished_at": "2026-09-22T14:50:57Z",
-  "elapsed_seconds": 4056,
+  "started_at": "2026-09-24T12:51:47Z",
+  "finished_at": "2026-09-24T14:04:43Z",
+  "elapsed_seconds": 4374,
   "runs": [
     {
       "name": "petstore",
       "spec": "petstore-1.0.7-swagger-2.0.json",
       "spec_path": ".../def/petstore-1.0.7-swagger-2.0.json",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 123,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 1,
-        "go": 2,
-        "py": 2,
-        "php": 2,
-        "rb": 2,
-        "lua": 2
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "solar",
-      "spec": "solar-1.0.0-openapi-3.0.0.yaml",
-      "spec_path": ".../def/solar-1.0.0-openapi-3.0.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 101,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "taxonomy",
-      "spec": "taxonomy-1.0.0-openapi-3.1.0.yaml",
-      "spec_path": ".../def/taxonomy-1.0.0-openapi-3.1.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 119,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "foo",
-      "spec": "foo-1.0.0-openapi-3.1.0.yaml",
-      "spec_path": ".../def/foo-1.0.0-openapi-3.1.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 118,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "pokeapi",
-      "spec": "pokeapi-20220523-openapi-3.0.0.yaml",
-      "spec_path": ".../def/pokeapi-20220523-openapi-3.0.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 141,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "dingconnect",
-      "spec": "dingconnect-v1-swagger-2.0.json",
-      "spec_path": ".../def/dingconnect-v1-swagger-2.0.json",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 102,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 1,
-        "go": 2,
-        "py": 2,
-        "php": 2,
-        "rb": 2,
-        "lua": 2
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "codatplatform",
-      "spec": "codatplatform-3.0.0-openapi-3.1.0.yaml",
-      "spec_path": ".../def/codatplatform-3.0.0-openapi-3.1.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 139,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "contentfulcma",
-      "spec": "contentfulcma-1.0.0-openapi-3.0.0.yaml",
-      "spec_path": ".../def/contentfulcma-1.0.0-openapi-3.0.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 150,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "learnworldsnew",
-      "spec": "learnworlds-2-openapi-3.1.0.yaml",
-      "spec_path": ".../def/learnworlds-2-openapi-3.1.0.yaml",
-      "result": null,
-      "scaffold_rc": 0,
-      "scaffold_install_rc": null,
-      "build_rc": 0,
-      "generate_warmup_rc": 0,
-      "generate_rc": 0,
-      "test_model_rc": 0,
-      "duration_seconds": 140,
-      "scaffold_skipped": false,
-      "targets": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "outputs": {
-        "ts": true,
-        "js": true,
-        "go": true,
-        "py": true,
-        "php": true,
-        "rb": true,
-        "lua": true
-      },
-      "deps": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "tests": {
-        "ts": 0,
-        "js": 0,
-        "go": 0,
-        "py": 0,
-        "php": 0,
-        "rb": 0,
-        "lua": 0
-      },
-      "other": {},
-      "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
-        "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
-      }
-    },
-    {
-      "name": "statuspage",
-      "spec": "statuspage-1.0.0-openapi-3.0.0.json",
-      "spec_path": ".../def/statuspage-1.0.0-openapi-3.0.0.json",
       "result": null,
       "scaffold_rc": 0,
       "scaffold_install_rc": null,
@@ -690,22 +122,337 @@
       },
       "other": {},
       "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
         "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
       }
     },
     {
-      "name": "shortcut",
-      "spec": "shortcut-v3-openapi-3.0.0.json",
-      "spec_path": ".../def/shortcut-v3-openapi-3.0.0.json",
+      "name": "solar",
+      "spec": "solar-1.0.0-openapi-3.0.0.yaml",
+      "spec_path": ".../def/solar-1.0.0-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 122,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "taxonomy",
+      "spec": "taxonomy-1.0.0-openapi-3.1.0.yaml",
+      "spec_path": ".../def/taxonomy-1.0.0-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 126,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "foo",
+      "spec": "foo-1.0.0-openapi-3.1.0.yaml",
+      "spec_path": ".../def/foo-1.0.0-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 139,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "pokeapi",
+      "spec": "pokeapi-20220523-openapi-3.0.0.yaml",
+      "spec_path": ".../def/pokeapi-20220523-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 200,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "dingconnect",
+      "spec": "dingconnect-v1-swagger-2.0.json",
+      "spec_path": ".../def/dingconnect-v1-swagger-2.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 144,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "codatplatform",
+      "spec": "codatplatform-3.0.0-openapi-3.1.0.yaml",
+      "spec_path": ".../def/codatplatform-3.0.0-openapi-3.1.0.yaml",
       "result": null,
       "scaffold_rc": 0,
       "scaffold_install_rc": null,
@@ -744,25 +491,277 @@
       },
       "tests": {
         "ts": 0,
-        "js": 1,
-        "go": 2,
-        "py": 2,
-        "php": 2,
-        "rb": 2,
-        "lua": 2
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
       },
       "other": {},
       "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
         "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "contentfulcma",
+      "spec": "contentfulcma-1.0.0-openapi-3.0.0.yaml",
+      "spec_path": ".../def/contentfulcma-1.0.0-openapi-3.0.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 179,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "learnworldsnew",
+      "spec": "learnworlds-2-openapi-3.1.0.yaml",
+      "spec_path": ".../def/learnworlds-2-openapi-3.1.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 170,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "statuspage",
+      "spec": "statuspage-1.0.0-openapi-3.0.0.json",
+      "spec_path": ".../def/statuspage-1.0.0-openapi-3.0.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 152,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "shortcut",
+      "spec": "shortcut-v3-openapi-3.0.0.json",
+      "spec_path": ".../def/shortcut-v3-openapi-3.0.0.json",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 206,
+      "scaffold_skipped": false,
+      "targets": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "outputs": {
+        "ts": true,
+        "js": true,
+        "go": true,
+        "py": true,
+        "php": true,
+        "rb": true,
+        "lua": true
+      },
+      "deps": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "tests": {
+        "ts": 0,
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
       }
     },
     {
@@ -776,7 +775,7 @@
       "generate_warmup_rc": 0,
       "generate_rc": 0,
       "test_model_rc": 0,
-      "duration_seconds": 335,
+      "duration_seconds": 312,
       "scaffold_skipped": false,
       "targets": {
         "ts": 0,
@@ -807,25 +806,25 @@
       },
       "tests": {
         "ts": 0,
-        "js": 1,
-        "go": 2,
-        "py": 2,
-        "php": 2,
-        "rb": 2,
-        "lua": 2
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 0
       },
       "other": {},
       "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
         "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
       }
     },
     {
@@ -839,7 +838,7 @@
       "generate_warmup_rc": 0,
       "generate_rc": 0,
       "test_model_rc": 0,
-      "duration_seconds": 1104,
+      "duration_seconds": 1129,
       "scaffold_skipped": false,
       "targets": {
         "ts": 0,
@@ -870,25 +869,25 @@
       },
       "tests": {
         "ts": 0,
-        "js": 1,
-        "go": 2,
-        "py": 2,
-        "php": 2,
-        "rb": 2,
-        "lua": 2
+        "js": 0,
+        "go": 0,
+        "py": 0,
+        "php": 0,
+        "rb": 0,
+        "lua": 124
       },
       "other": {},
       "versions": {
-        "@voxgig/sdkgen": "4.23.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
         "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
       }
     },
     {
@@ -902,7 +901,7 @@
       "generate_warmup_rc": 0,
       "generate_rc": 0,
       "test_model_rc": 0,
-      "duration_seconds": 1209,
+      "duration_seconds": 1220,
       "scaffold_skipped": false,
       "targets": {
         "ts": 0,
@@ -938,20 +937,20 @@
         "py": 0,
         "php": 0,
         "rb": 0,
-        "lua": 0
+        "lua": 124
       },
       "other": {},
       "versions": {
-        "@voxgig/sdkgen": "4.24.0",
-        "@voxgig/apidef": "8.15.0",
-        "@voxgig/model": "11.1.1",
-        "@voxgig/docgen": "0.26.0",
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
         "@voxgig/struct": "0.3.6",
-        "aontu": "0.72.0",
-        "jostraca": "0.38.1",
-        "@tabnas/parser": "0.11.1",
-        "@tabnas/yaml": "0.5.7",
-        "@tabnas/jsonic": "0.6.7"
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
       }
     }
   ]

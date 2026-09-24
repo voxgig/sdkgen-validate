@@ -1,0 +1,154 @@
+{
+  "config": {
+    "defs": ".../apidef-validate/def",
+    "out": ".../svlua/out",
+    "run_dir": ".../svlua/run",
+    "specs": ".../specs/default.txt",
+    "targets": "lua",
+    "gen_timeout": "1800",
+    "scaffold_timeout": "900",
+    "target_timeout": "600",
+    "build_timeout": "900",
+    "keep": "0",
+    "clean_after": "1",
+    "run_tests": "1",
+    "test_timeout": "900",
+    "docgen_path": "",
+    "no_docs": "0",
+    "langpack_path": "",
+    "infrapack_path": "",
+    "only": "gitlab,github",
+    "tools": {
+      "node": "24.21.0",
+      "npm": "11.19.0",
+      "python3": "3.11.15",
+      "go": "1.24.7",
+      "pip": "24.0",
+      "php": "8.4.19",
+      "composer": "2.8.12",
+      "ruby": "3.3.6",
+      "bundle": "4.0.9",
+      "lua": "5.4.6",
+      "busted": "2.2.0",
+      "make": "4.3"
+    }
+  },
+  "versions": {
+    "@tabnas/jsonic": [
+      "0.7.1"
+    ],
+    "@tabnas/parser": [
+      "0.12.2"
+    ],
+    "@tabnas/yaml": [
+      "0.5.8"
+    ],
+    "@voxgig/apidef": [
+      "8.17.0"
+    ],
+    "@voxgig/create-sdkgen": [
+      "0.28.0"
+    ],
+    "@voxgig/docgen": [
+      "0.27.0"
+    ],
+    "@voxgig/model": [
+      "12.0.0"
+    ],
+    "@voxgig/sdkgen": [
+      "4.25.0"
+    ],
+    "@voxgig/struct": [
+      "0.3.6"
+    ],
+    "aontu": [
+      "0.75.0"
+    ],
+    "jostraca": [
+      "0.39.0"
+    ]
+  },
+  "started_at": "2026-09-24T14:05:04Z",
+  "finished_at": "2026-09-24T14:30:38Z",
+  "elapsed_seconds": 1532,
+  "runs": [
+    {
+      "name": "gitlab",
+      "spec": "gitlab-v4-swagger-2.0.yaml",
+      "spec_path": ".../def/gitlab-v4-swagger-2.0.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 716,
+      "scaffold_skipped": false,
+      "targets": {
+        "lua": 0
+      },
+      "outputs": {
+        "lua": true
+      },
+      "deps": {
+        "lua": 0
+      },
+      "tests": {
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    },
+    {
+      "name": "github",
+      "spec": "github-1.1.4-openapi-3.0.3.yaml",
+      "spec_path": ".../def/github-1.1.4-openapi-3.0.3.yaml",
+      "result": null,
+      "scaffold_rc": 0,
+      "scaffold_install_rc": null,
+      "build_rc": 0,
+      "generate_warmup_rc": 0,
+      "generate_rc": 0,
+      "test_model_rc": 0,
+      "duration_seconds": 816,
+      "scaffold_skipped": false,
+      "targets": {
+        "lua": 0
+      },
+      "outputs": {
+        "lua": true
+      },
+      "deps": {
+        "lua": 0
+      },
+      "tests": {
+        "lua": 0
+      },
+      "other": {},
+      "versions": {
+        "@voxgig/sdkgen": "4.25.0",
+        "@voxgig/apidef": "8.17.0",
+        "@voxgig/model": "12.0.0",
+        "@voxgig/docgen": "0.27.0",
+        "@voxgig/struct": "0.3.6",
+        "aontu": "0.75.0",
+        "jostraca": "0.39.0",
+        "@tabnas/parser": "0.12.2",
+        "@tabnas/yaml": "0.5.8",
+        "@tabnas/jsonic": "0.7.1"
+      }
+    }
+  ]
+}
