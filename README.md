@@ -102,7 +102,6 @@ tools/
   driver.test.cjs   # the driver's usage/argument tests
 reports/
   latest/           # the last run's REPORT.md + report.json, committed
-  lua-rerun/        # gitlab and github lua re-run at --test-timeout 900
 ```
 
 ## Prerequisites
