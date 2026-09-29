@@ -1,18 +1,18 @@
 # validate-sdkgen run report
 
-- Started: `2026-09-24T12:51:47Z`
-- Finished: `2026-09-24T14:04:43Z` (elapsed 4374s)
+- Started: `2026-09-29T20:57:56Z`
+- Finished: `2026-09-29T22:10:14Z` (elapsed 4337s)
 
 ## Configuration
 - `defs` = `.../apidef-validate/def`
-- `out` = `.../svpub/out`
+- `out` = `.../scratchpad/sv-out-full2`
 - `specs` = `.../specs/default.txt`
 - `targets` = `ts,js,go,py,php,rb,lua`
-- `gen_timeout` = `600`
+- `gen_timeout` = `1800`
 - `scaffold_timeout` = `600`
 - `target_timeout` = `180`
 - `build_timeout` = `180`
-- `test_timeout` = `300`
+- `test_timeout` = `900`
 - `keep` = `0`
 - `clean_after` = `1`
 - `run_tests` = `1`
@@ -36,36 +36,38 @@ Tools:
 
 | Package | Version |
 |---|---|
-| `@tabnas/jsonic` | `0.7.1` |
-| `@tabnas/parser` | `0.12.2` |
-| `@tabnas/yaml` | `0.5.8` |
-| `@voxgig/apidef` | `8.17.0` |
-| `@voxgig/create-sdkgen` | `0.28.0` |
-| `@voxgig/docgen` | `0.27.0` |
+| `@tabnas/jsonic` | `0.7.2` |
+| `@tabnas/parser` | `0.12.7` |
+| `@tabnas/yaml` | `0.5.13, 0.5.14` |
+| `@voxgig/apidef` | `8.22.0` |
+| `@voxgig/create-sdkgen` | `0.30.4` |
+| `@voxgig/docgen` | `0.30.0` |
 | `@voxgig/model` | `12.0.0` |
-| `@voxgig/sdkgen` | `4.25.0` |
+| `@voxgig/sdkgen` | `4.32.1` |
 | `@voxgig/struct` | `0.3.6` |
-| `aontu` | `0.75.0` |
+| `aontu` | `0.76.0` |
 | `jostraca` | `0.39.0` |
+
+`@tabnas/yaml` changed during the run: `0.5.13` for petstore, solar, taxonomy, foo, pokeapi, dingconnect, codatplatform, contentfulcma, learnworldsnew, statuspage, shortcut, cloudsmith; `0.5.14` for gitlab, github.
 
 ## Scoreboard
 
 | # | Name | Spec | Scaffold | Build | Warmup | Generate | TestModel | Targets | Outputs | Duration |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | petstore | petstore-1.0.7-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 126s |
-| 2 | solar | solar-1.0.0-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 122s |
-| 3 | taxonomy | taxonomy-1.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 126s |
-| 4 | foo | foo-1.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 139s |
-| 5 | pokeapi | pokeapi-20220523-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 200s |
-| 6 | dingconnect | dingconnect-v1-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 144s |
-| 7 | codatplatform | codatplatform-3.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 149s |
-| 8 | contentfulcma | contentfulcma-1.0.0-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 179s |
-| 9 | learnworldsnew | learnworlds-2-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 170s |
-| 10 | statuspage | statuspage-1.0.0-openapi-3.0.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 152s |
-| 11 | shortcut | shortcut-v3-openapi-3.0.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 206s |
-| 12 | cloudsmith | cloudsmith-v1-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 312s |
-| 13 | gitlab | gitlab-v4-swagger-2.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 1129s |
-| 14 | github | github-1.1.4-openapi-3.0.3.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 1220s |
+| 1 | petstore | petstore-1.0.7-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 136s |
+| 2 | solar | solar-1.0.0-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 129s |
+| 3 | taxonomy | taxonomy-1.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 144s |
+| 4 | foo | foo-1.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 146s |
+| 5 | pokeapi | pokeapi-20220523-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 189s |
+| 6 | dingconnect | dingconnect-v1-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 182s |
+| 7 | codatplatform | codatplatform-3.0.0-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 153s |
+| 8 | contentfulcma | contentfulcma-1.0.0-openapi-3.0.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 205s |
+| 9 | learnworldsnew | learnworlds-2-openapi-3.1.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 190s |
+| 10 | statuspage | statuspage-1.0.0-openapi-3.0.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 169s |
+| 11 | shortcut | shortcut-v3-openapi-3.0.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 198s |
+| 12 | cloudsmith | cloudsmith-v1-swagger-2.0.json | OK | OK | OK | OK | OK | 7/7 | 7/7 | 294s |
+| 13 | gitlab | gitlab-v4-swagger-2.0.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 1069s |
+| 14 | github | github-1.1.4-openapi-3.0.3.yaml | OK | OK | OK | OK | OK | 7/7 | 7/7 | 1133s |
 
 **Totals:** 14/14 specs produced output for every target.
 
@@ -144,7 +146,7 @@ Warmup is the first generate pass, which the totals do not score.
 | statuspage | OK | OK | OK | OK | OK | OK | OK |
 | shortcut | OK | OK | OK | OK | OK | OK | OK |
 | cloudsmith | OK | OK | OK | OK | OK | OK | OK |
-| gitlab | OK | OK | OK | OK | OK | OK | TIMEOUT |
-| github | OK | OK | OK | OK | OK | OK | TIMEOUT |
+| gitlab | OK | OK | OK | OK | OK | OK | OK |
+| github | OK | OK | OK | OK | OK | OK | OK |
 
-**Test totals:** 96/98 target test suites passed.
+**Test totals:** 98/98 target test suites passed.
