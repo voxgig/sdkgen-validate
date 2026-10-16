@@ -389,13 +389,17 @@ run_target_tests() {
   fi
 
   local deps_cmd="" test_cmd=""
+  # py and rb install into the project, never the system: a managed Python
+  # refuses pip (PEP 668), and the system gem directory needs root.
   case "${t}" in
     ts)  deps_cmd="npm install && npm run build"; test_cmd="npm test" ;;
     js)  deps_cmd="npm install";                  test_cmd="npm test" ;;
     go)  deps_cmd=":";                            test_cmd="make test" ;;
-    py)  deps_cmd="python3 -m pip install -e . pytest";      test_cmd="make test" ;;
+    py)  deps_cmd='python3 -m venv .venv && .venv/bin/python -m pip install -e . pytest'
+         test_cmd='PATH="$PWD/.venv/bin:$PATH" make test' ;;
     php) deps_cmd="composer install";             test_cmd="make test" ;;
-    rb)  deps_cmd="bundle install";               test_cmd="make test" ;;
+    rb)  deps_cmd='bundle config set --local path .bundle/gems && bundle install'
+         test_cmd='bundle exec make test' ;;
     lua) deps_cmd=":";                            test_cmd="make test" ;;
     dart) deps_cmd="dart pub get";                test_cmd="make build test" ;;
     haskell|lean) deps_cmd=":";                   test_cmd="make build test" ;;
