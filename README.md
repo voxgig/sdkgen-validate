@@ -134,8 +134,9 @@ that wiring stays legal until it is staged. `make deps-test` is the gate's own
 suite, and `tools/dep-gate.json` is the allowlist: an entry needs a reason,
 and the gate reports one that has stopped matching anything.
 
-CI runs the comment gate on every push, and `.githooks/pre-push`
-(`make hooks`) runs both gates before anything leaves the machine.
+CI runs every gate `make test` runs on every push and pull request
+(`.github/workflows/gates.yml`), and `.githooks/pre-push` (`make hooks`) runs
+the comment and dependency gates before anything leaves the machine.
 
 ## Usage
 

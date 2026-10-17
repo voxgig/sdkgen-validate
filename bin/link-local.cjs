@@ -26,3 +26,17 @@ for (const source of paths.filter(Boolean)) {
   if (resolved !== Path.join(root, 'package.json')) throw Error('Local resolution mismatch: ' + pkg.name)
   console.log(pkg.name + '@' + pkg.version + ' -> ' + root)
 }
+
+// A linked sdkgen names jostraca's types through its own node_modules. An
+// install dedupes to one jostraca, so the project's has to be that one too,
+// or tsc cannot name them (TS2883).
+const sdkgen = paths.filter(Boolean).map((p) => Fs.realpathSync(p))
+  .find((root) => '@voxgig/sdkgen' === JSON.parse(Fs.readFileSync(Path.join(root, 'package.json'), 'utf8')).name)
+const nested = sdkgen && Path.join(sdkgen, 'node_modules', 'jostraca')
+if (nested && Fs.existsSync(nested)) {
+  const root = Fs.realpathSync(nested)
+  const dest = Path.join(modules, 'jostraca')
+  Fs.rmSync(dest, { recursive: true, force: true })
+  Fs.symlinkSync(root, dest, 'dir')
+  console.log('jostraca -> ' + root + ' (as @voxgig/sdkgen resolves it)')
+}
